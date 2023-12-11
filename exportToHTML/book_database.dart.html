@@ -1,0 +1,199 @@
+<html>
+<head>
+<title>book_database.dart</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.s1 { color: #6a8759;}
+.s2 { color: #cc7832;}
+.s3 { color: #6897bb;}
+.s4 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+book_database.dart</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">'dart:convert'</span><span class="s2">;</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">'package:sqflite/sqflite.dart'</span><span class="s2">;</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">import </span><span class="s1">'package:path/path.dart'</span><span class="s2">;</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">import </span><span class="s1">'package:http/http.dart' </span><span class="s0">as http</span><span class="s2">;</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">import </span><span class="s1">'../backend/google_books_api.dart'</span><span class="s2">;</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">import </span><span class="s1">'../book_data.dart'</span><span class="s2">;</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s2">class </span><span class="s0">DatabaseHelper {</span>
+<a name="l10"><span class="ln">10   </span></a>  <span class="s2">final </span><span class="s0">String _baseUrl = </span><span class="s1">&quot;http://192.168.1.120:3000&quot;</span><span class="s2">;</span>
+<a name="l11"><span class="ln">11   </span></a>  <span class="s0">static </span><span class="s2">final </span><span class="s0">DatabaseHelper _instance = DatabaseHelper._internal()</span><span class="s2">;</span>
+<a name="l12"><span class="ln">12   </span></a>  <span class="s0">late Database _db</span><span class="s2">;</span>
+<a name="l13"><span class="ln">13   </span></a>
+<a name="l14"><span class="ln">14   </span></a>  <span class="s0">factory DatabaseHelper() =&gt; _instance</span><span class="s2">;</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a>  <span class="s0">DatabaseHelper._internal()</span><span class="s2">;</span>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a>  <span class="s0">Future&lt;</span><span class="s2">void</span><span class="s0">&gt; initializeDatabase(String username) async {</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s2">final </span><span class="s0">databasesPath = await getDatabasesPath()</span><span class="s2">;</span>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s2">final </span><span class="s0">path = join(databasesPath</span><span class="s2">, </span><span class="s1">'</span><span class="s0">$username</span><span class="s1">.db'</span><span class="s0">)</span><span class="s2">;</span>
+<a name="l21"><span class="ln">21   </span></a>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s0">_db = await openDatabase(</span>
+<a name="l23"><span class="ln">23   </span></a>      <span class="s0">path</span><span class="s2">,</span>
+<a name="l24"><span class="ln">24   </span></a>      <span class="s0">version: </span><span class="s3">1</span><span class="s2">,</span>
+<a name="l25"><span class="ln">25   </span></a>      <span class="s0">onCreate: (db</span><span class="s2">, </span><span class="s0">version) async {</span>
+<a name="l26"><span class="ln">26   </span></a>        <span class="s4">// Create tables if needed</span>
+<a name="l27"><span class="ln">27   </span></a>        <span class="s0">await db.execute(</span><span class="s1">'''</span>
+<a name="l28"><span class="ln">28   </span></a>          <span class="s1">CREATE TABLE books ( 
+<a name="l29"><span class="ln">29   </span></a>            book_id TEXT PRIMARY KEY, 
+<a name="l30"><span class="ln">30   </span></a>            title TEXT, 
+<a name="l31"><span class="ln">31   </span></a>            subtitle TEXT, 
+<a name="l32"><span class="ln">32   </span></a>            authors TEXT, 
+<a name="l33"><span class="ln">33   </span></a>            categories TEXT, 
+<a name="l34"><span class="ln">34   </span></a>            published_date TEXT, 
+<a name="l35"><span class="ln">35   </span></a>            description TEXT, 
+<a name="l36"><span class="ln">36   </span></a>            total_pages INTEGER, 
+<a name="l37"><span class="ln">37   </span></a>            language TEXT, 
+<a name="l38"><span class="ln">38   </span></a>            image_links TEXT, 
+<a name="l39"><span class="ln">39   </span></a>            buy_date TEXT, 
+<a name="l40"><span class="ln">40   </span></a>            last_read_date TEXT, 
+<a name="l41"><span class="ln">41   </span></a>            last_page_read INTEGER, 
+<a name="l42"><span class="ln">42   </span></a>            percent_read REAL, 
+<a name="l43"><span class="ln">43   </span></a>            total_read_hour REAL, 
+<a name="l44"><span class="ln">44   </span></a>            last_seen_place TEXT, 
+<a name="l45"><span class="ln">45   </span></a>            quotation TEXT, 
+<a name="l46"><span class="ln">46   </span></a>            comment TEXT 
+<a name="l47"><span class="ln">47   </span></a>          ) 
+<a name="l48"><span class="ln">48   </span></a>        '''</span><span class="s0">)</span><span class="s2">;</span>
+<a name="l49"><span class="ln">49   </span></a>      <span class="s0">}</span><span class="s2">,</span>
+<a name="l50"><span class="ln">50   </span></a>    <span class="s0">)</span><span class="s2">;</span>
+<a name="l51"><span class="ln">51   </span></a>  <span class="s0">}</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>  <span class="s0">Future&lt;</span><span class="s2">void</span><span class="s0">&gt; syncBooks(List&lt;Map&lt;String</span><span class="s2">, </span><span class="s0">dynamic&gt;&gt; books</span><span class="s2">, </span><span class="s0">int userId) async {</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s2">for </span><span class="s0">(</span><span class="s2">var </span><span class="s0">bookData </span><span class="s2">in </span><span class="s0">books) {</span>
+<a name="l55"><span class="ln">55   </span></a>      <span class="s0">BookState bookState = BookState(</span>
+<a name="l56"><span class="ln">56   </span></a>          <span class="s0">bookId: bookData[</span><span class="s1">'book_id'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l57"><span class="ln">57   </span></a>          <span class="s0">buyDate: bookData[</span><span class="s1">'buy_date'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l58"><span class="ln">58   </span></a>          <span class="s0">lastReadDate: DateTime.tryParse(bookData[</span><span class="s1">'last_read_date'</span><span class="s0">]) ?? DateTime.now()</span><span class="s2">,</span>
+<a name="l59"><span class="ln">59   </span></a>          <span class="s0">lastPageRead: bookData[</span><span class="s1">'last_page_read'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l60"><span class="ln">60   </span></a>          <span class="s0">percentRead: bookData[</span><span class="s1">'percent_read'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l61"><span class="ln">61   </span></a>          <span class="s0">totalReadHours: bookData[</span><span class="s1">'total_read_hours'</span><span class="s0">].toDouble()</span><span class="s2">,</span>
+<a name="l62"><span class="ln">62   </span></a>          <span class="s0">addToFavorites: </span><span class="s2">false,</span>
+<a name="l63"><span class="ln">63   </span></a>          <span class="s0">lastSeenPlace: bookData[</span><span class="s1">'last_seen_place'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l64"><span class="ln">64   </span></a>          <span class="s0">userId: userId</span><span class="s2">,</span>
+<a name="l65"><span class="ln">65   </span></a>          <span class="s0">quotation: List&lt;String&gt;.from(bookData[</span><span class="s1">'quotation'</span><span class="s0">] ?? [])</span><span class="s2">,</span>
+<a name="l66"><span class="ln">66   </span></a>          <span class="s0">comment: List&lt;String&gt;.from(bookData[</span><span class="s1">'comment'</span><span class="s0">] ?? [])</span>
+<a name="l67"><span class="ln">67   </span></a>      <span class="s0">)</span><span class="s2">;</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>      <span class="s0">Map&lt;String</span><span class="s2">, </span><span class="s0">dynamic&gt; bookMap = {}</span><span class="s2">;</span>
+<a name="l70"><span class="ln">70   </span></a>
+<a name="l71"><span class="ln">71   </span></a>      <span class="s2">if</span><span class="s0">(bookData[</span><span class="s1">'title'</span><span class="s0">] != </span><span class="s2">null</span><span class="s0">) {</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s0">Book book = Book(</span>
+<a name="l73"><span class="ln">73   </span></a>          <span class="s0">id: bookData[</span><span class="s1">'book_id'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l74"><span class="ln">74   </span></a>          <span class="s0">title: bookData[</span><span class="s1">'title'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l75"><span class="ln">75   </span></a>          <span class="s0">subtitle: bookData[</span><span class="s1">'subtitle'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l76"><span class="ln">76   </span></a>          <span class="s0">authors: List&lt;String&gt;.from(bookData[</span><span class="s1">'authors'</span><span class="s0">] ?? [])</span><span class="s2">,</span>
+<a name="l77"><span class="ln">77   </span></a>          <span class="s0">categories: List&lt;String&gt;.from(bookData[</span><span class="s1">'categories'</span><span class="s0">] ?? [])</span><span class="s2">,</span>
+<a name="l78"><span class="ln">78   </span></a>          <span class="s0">publishedDate: bookData[</span><span class="s1">'published_date'</span><span class="s0">] ?? </span><span class="s1">''</span><span class="s2">,</span>
+<a name="l79"><span class="ln">79   </span></a>          <span class="s0">description: bookData[</span><span class="s1">'description'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l80"><span class="ln">80   </span></a>          <span class="s0">totalPages: bookData[</span><span class="s1">'total_pages'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l81"><span class="ln">81   </span></a>          <span class="s0">language: bookData[</span><span class="s1">'language'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l82"><span class="ln">82   </span></a>          <span class="s0">imageLinks: Map&lt;String</span><span class="s2">, </span><span class="s0">String&gt;.from(bookData[</span><span class="s1">'image_links'</span><span class="s0">] ?? {})</span><span class="s2">,</span>
+<a name="l83"><span class="ln">83   </span></a>          <span class="s4">// Assign other properties...</span>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s0">)</span><span class="s2">;</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s0">bookMap = {</span>
+<a name="l87"><span class="ln">87   </span></a>          <span class="s1">'book_id'</span><span class="s0">: book.id</span><span class="s2">,</span>
+<a name="l88"><span class="ln">88   </span></a>          <span class="s1">'title'</span><span class="s0">: book.title</span><span class="s2">,</span>
+<a name="l89"><span class="ln">89   </span></a>          <span class="s1">'subtitle'</span><span class="s0">: book.subtitle</span><span class="s2">,</span>
+<a name="l90"><span class="ln">90   </span></a>          <span class="s1">'authors'</span><span class="s0">: book.authors.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l91"><span class="ln">91   </span></a>          <span class="s1">'categories'</span><span class="s0">: book.categories.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l92"><span class="ln">92   </span></a>          <span class="s1">'published_date'</span><span class="s0">: book.publishedDate</span><span class="s2">,</span>
+<a name="l93"><span class="ln">93   </span></a>          <span class="s1">'description'</span><span class="s0">: book.description</span><span class="s2">,</span>
+<a name="l94"><span class="ln">94   </span></a>          <span class="s1">'total_pages'</span><span class="s0">: book.totalPages</span><span class="s2">,</span>
+<a name="l95"><span class="ln">95   </span></a>          <span class="s1">'language'</span><span class="s0">: book.language</span><span class="s2">,</span>
+<a name="l96"><span class="ln">96   </span></a>          <span class="s1">'image_links'</span><span class="s0">: jsonEncode(book.imageLinks)</span><span class="s2">,</span>
+<a name="l97"><span class="ln">97   </span></a>          <span class="s1">'buy_date'</span><span class="s0">: bookState.buyDate</span><span class="s2">,</span>
+<a name="l98"><span class="ln">98   </span></a>          <span class="s1">'last_read_date'</span><span class="s0">: bookData[</span><span class="s1">'last_read_date'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l99"><span class="ln">99   </span></a>          <span class="s1">'last_page_read'</span><span class="s0">: bookState.lastPageRead</span><span class="s2">,</span>
+<a name="l100"><span class="ln">100  </span></a>          <span class="s1">'percent_read'</span><span class="s0">: bookState.percentRead</span><span class="s2">,</span>
+<a name="l101"><span class="ln">101  </span></a>          <span class="s1">'total_read_hour'</span><span class="s0">: bookState.totalReadHours</span><span class="s2">,</span>
+<a name="l102"><span class="ln">102  </span></a>          <span class="s1">'last_seen_place'</span><span class="s0">: bookData[</span><span class="s1">'last_seen_place'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l103"><span class="ln">103  </span></a>          <span class="s1">'quotation'</span><span class="s0">: bookState.quotation.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l104"><span class="ln">104  </span></a>          <span class="s1">'comment'</span><span class="s0">: bookState.comment.join(</span><span class="s1">', '</span><span class="s0">)</span>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s0">}</span><span class="s2">;</span>
+<a name="l106"><span class="ln">106  </span></a>
+<a name="l107"><span class="ln">107  </span></a>      <span class="s0">} </span><span class="s2">else </span><span class="s0">{</span>
+<a name="l108"><span class="ln">108  </span></a>        <span class="s2">final </span><span class="s0">result = await getBookByISBN(bookState.bookId)</span><span class="s2">;</span>
+<a name="l109"><span class="ln">109  </span></a>        <span class="s2">if </span><span class="s0">(result[</span><span class="s1">'success'</span><span class="s0">]) {</span>
+<a name="l110"><span class="ln">110  </span></a>          <span class="s2">final </span><span class="s0">bookInfo = result[</span><span class="s1">'bookInfo'</span><span class="s0">]</span><span class="s2">;</span>
+<a name="l111"><span class="ln">111  </span></a>          <span class="s0">Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo)</span><span class="s2">;</span>
+<a name="l112"><span class="ln">112  </span></a>          <span class="s0">bookMap = {</span>
+<a name="l113"><span class="ln">113  </span></a>            <span class="s1">'book_id'</span><span class="s0">: retrievedBook.id</span><span class="s2">,</span>
+<a name="l114"><span class="ln">114  </span></a>            <span class="s1">'title'</span><span class="s0">: retrievedBook.title</span><span class="s2">,</span>
+<a name="l115"><span class="ln">115  </span></a>            <span class="s1">'subtitle'</span><span class="s0">: retrievedBook.subtitle</span><span class="s2">,</span>
+<a name="l116"><span class="ln">116  </span></a>            <span class="s1">'authors'</span><span class="s0">: retrievedBook.authors.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l117"><span class="ln">117  </span></a>            <span class="s1">'categories'</span><span class="s0">: retrievedBook.categories.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l118"><span class="ln">118  </span></a>            <span class="s1">'published_date'</span><span class="s0">: retrievedBook.publishedDate</span><span class="s2">,</span>
+<a name="l119"><span class="ln">119  </span></a>            <span class="s1">'description'</span><span class="s0">: retrievedBook.description</span><span class="s2">,</span>
+<a name="l120"><span class="ln">120  </span></a>            <span class="s1">'total_pages'</span><span class="s0">: retrievedBook.totalPages</span><span class="s2">,</span>
+<a name="l121"><span class="ln">121  </span></a>            <span class="s1">'language'</span><span class="s0">: retrievedBook.language</span><span class="s2">,</span>
+<a name="l122"><span class="ln">122  </span></a>            <span class="s1">'image_links'</span><span class="s0">: jsonEncode(retrievedBook.imageLinks)</span><span class="s2">,</span>
+<a name="l123"><span class="ln">123  </span></a>            <span class="s1">'buy_date'</span><span class="s0">: bookState.buyDate</span><span class="s2">,</span>
+<a name="l124"><span class="ln">124  </span></a>            <span class="s1">'last_read_date'</span><span class="s0">: bookData[</span><span class="s1">'last_read_date'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l125"><span class="ln">125  </span></a>            <span class="s1">'last_page_read'</span><span class="s0">: bookState.lastPageRead</span><span class="s2">,</span>
+<a name="l126"><span class="ln">126  </span></a>            <span class="s1">'percent_read'</span><span class="s0">: bookState.percentRead</span><span class="s2">,</span>
+<a name="l127"><span class="ln">127  </span></a>            <span class="s1">'total_read_hour'</span><span class="s0">: bookState.totalReadHours</span><span class="s2">,</span>
+<a name="l128"><span class="ln">128  </span></a>            <span class="s1">'last_seen_place'</span><span class="s0">: bookData[</span><span class="s1">'last_seen_place'</span><span class="s0">]</span><span class="s2">,</span>
+<a name="l129"><span class="ln">129  </span></a>            <span class="s1">'quotation'</span><span class="s0">: bookState.quotation.join(</span><span class="s1">', '</span><span class="s0">)</span><span class="s2">,</span>
+<a name="l130"><span class="ln">130  </span></a>            <span class="s1">'comment'</span><span class="s0">: bookState.comment.join(</span><span class="s1">', '</span><span class="s0">)</span>
+<a name="l131"><span class="ln">131  </span></a>          <span class="s0">}</span><span class="s2">;</span>
+<a name="l132"><span class="ln">132  </span></a>        <span class="s0">} </span><span class="s2">else </span><span class="s0">{</span>
+<a name="l133"><span class="ln">133  </span></a>          <span class="s0">print(</span><span class="s1">'Error: </span><span class="s0">${result[</span><span class="s1">'message'</span><span class="s0">]}</span><span class="s1">'</span><span class="s0">)</span><span class="s2">; </span><span class="s4">// or handle the error appropriately</span>
+<a name="l134"><span class="ln">134  </span></a>        <span class="s0">}</span>
+<a name="l135"><span class="ln">135  </span></a>      <span class="s0">}</span>
+<a name="l136"><span class="ln">136  </span></a>
+<a name="l137"><span class="ln">137  </span></a>      <span class="s0">List&lt;Map&lt;String</span><span class="s2">, </span><span class="s0">dynamic&gt;&gt; existingBooks = await _db.query(</span>
+<a name="l138"><span class="ln">138  </span></a>        <span class="s1">'books'</span><span class="s2">,</span>
+<a name="l139"><span class="ln">139  </span></a>        <span class="s0">where: </span><span class="s1">'book_id = ?'</span><span class="s2">,</span>
+<a name="l140"><span class="ln">140  </span></a>        <span class="s0">whereArgs: [bookState.bookId]</span><span class="s2">,</span>
+<a name="l141"><span class="ln">141  </span></a>      <span class="s0">)</span><span class="s2">;</span>
+<a name="l142"><span class="ln">142  </span></a>      <span class="s2">if </span><span class="s0">(existingBooks.isNotEmpty) {</span>
+<a name="l143"><span class="ln">143  </span></a>        <span class="s4">// Book exists, perform an update</span>
+<a name="l144"><span class="ln">144  </span></a>        <span class="s0">await _db.update(</span>
+<a name="l145"><span class="ln">145  </span></a>          <span class="s1">'books'</span><span class="s2">,</span>
+<a name="l146"><span class="ln">146  </span></a>          <span class="s0">bookMap</span><span class="s2">,</span>
+<a name="l147"><span class="ln">147  </span></a>          <span class="s0">where: </span><span class="s1">'book_id = ?'</span><span class="s2">,</span>
+<a name="l148"><span class="ln">148  </span></a>          <span class="s0">whereArgs: [bookState.bookId]</span><span class="s2">,</span>
+<a name="l149"><span class="ln">149  </span></a>          <span class="s0">conflictAlgorithm: ConflictAlgorithm.replace</span><span class="s2">,</span>
+<a name="l150"><span class="ln">150  </span></a>        <span class="s0">)</span><span class="s2">;</span>
+<a name="l151"><span class="ln">151  </span></a>      <span class="s0">} </span><span class="s2">else </span><span class="s0">{</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s0">await _db.insert(</span><span class="s1">'books'</span><span class="s2">, </span><span class="s0">bookMap</span><span class="s2">, </span><span class="s0">conflictAlgorithm: ConflictAlgorithm.replace)</span><span class="s2">;</span>
+<a name="l153"><span class="ln">153  </span></a>      <span class="s0">}</span>
+<a name="l154"><span class="ln">154  </span></a>    <span class="s0">}</span>
+<a name="l155"><span class="ln">155  </span></a>  <span class="s0">}</span>
+<a name="l156"><span class="ln">156  </span></a><span class="s4">// Add more methods for CRUD operations as needed</span>
+<a name="l157"><span class="ln">157  </span></a>  <span class="s0">Future&lt;</span><span class="s2">void</span><span class="s0">&gt; syncBooksFromServer(int userId</span><span class="s2">, </span><span class="s0">String username) async {</span>
+<a name="l158"><span class="ln">158  </span></a>    <span class="s2">final </span><span class="s0">response = await http.get(Uri.parse(</span><span class="s1">'</span><span class="s0">$_baseUrl</span><span class="s1">/books?userId=</span><span class="s0">$userId</span><span class="s1">'</span><span class="s0">))</span><span class="s2">;</span>
+<a name="l159"><span class="ln">159  </span></a>
+<a name="l160"><span class="ln">160  </span></a>
+<a name="l161"><span class="ln">161  </span></a>    <span class="s2">if </span><span class="s0">(response.statusCode == </span><span class="s3">200</span><span class="s0">) {</span>
+<a name="l162"><span class="ln">162  </span></a>
+<a name="l163"><span class="ln">163  </span></a>      <span class="s2">final </span><span class="s0">List&lt;dynamic&gt; booksData = jsonDecode(response.body)</span><span class="s2">;</span>
+<a name="l164"><span class="ln">164  </span></a>      <span class="s0">print(booksData)</span><span class="s2">;</span>
+<a name="l165"><span class="ln">165  </span></a>      <span class="s2">final </span><span class="s0">List&lt;Map&lt;String</span><span class="s2">, </span><span class="s0">dynamic&gt;&gt; books = booksData.map((book) =&gt; book as Map&lt;String</span><span class="s2">, </span><span class="s0">dynamic&gt;).toList()</span><span class="s2">;</span>
+<a name="l166"><span class="ln">166  </span></a>
+<a name="l167"><span class="ln">167  </span></a>      <span class="s2">final </span><span class="s0">databaseHelper = DatabaseHelper()</span><span class="s2">;</span>
+<a name="l168"><span class="ln">168  </span></a>      <span class="s0">await databaseHelper.initializeDatabase(username)</span><span class="s2">;</span>
+<a name="l169"><span class="ln">169  </span></a>      <span class="s0">await databaseHelper.syncBooks(books</span><span class="s2">, </span><span class="s0">userId)</span><span class="s2">;</span>
+<a name="l170"><span class="ln">170  </span></a>    <span class="s0">} </span><span class="s2">else </span><span class="s0">{</span>
+<a name="l171"><span class="ln">171  </span></a>      <span class="s4">// Handle error</span>
+<a name="l172"><span class="ln">172  </span></a>      <span class="s0">print(</span><span class="s1">'Failed to fetch books from the server'</span><span class="s0">)</span><span class="s2">;</span>
+<a name="l173"><span class="ln">173  </span></a>    <span class="s0">}</span>
+<a name="l174"><span class="ln">174  </span></a>  <span class="s0">}</span>
+<a name="l175"><span class="ln">175  </span></a><span class="s0">}</span>
+<a name="l176"><span class="ln">176  </span></a>
+<a name="l177"><span class="ln">177  </span></a>
+<a name="l178"><span class="ln">178  </span></a></pre>
+</body>
+</html>
