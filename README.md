@@ -2,8 +2,11 @@
 
 Project môn Kỹ thuật phần mềm ứng dụng của Đại học Bách Khoa Hà Nội.
 Nhóm:   Nguyễn Đức Minh
+
         Trần Quang Minh
+        
         Đỗ Hữu Dương
+        
         Nguyễn Trọng Trí Kiên
 
 ## Mô tả
