@@ -1,16 +1,15 @@
-# login_test
+# personal_library
 
-A new Flutter project.
+Project môn Kỹ thuật phần mềm ứng dụng của Đại học Bách Khoa Hà Nội.
+Nhóm:   Nguyễn Đức Minh
+        Trần Quang Minh
+        Đỗ Hữu Dương
+        Nguyễn Trọng Trí Kiên
 
-## Getting Started
+## Mô tả
 
-This project is a starting point for a Flutter application.
+Dự án này là một phần mềm điện thoại được nhóm phát triển năm 2023, phục vụ Bài tập lớn môn Kỹ thuật phần mềm ứng dụng của ĐHBKHN.
+Phần mềm được xây dựng để quản lý thư viện sách cá nhân của người dùng, với các chức năng như quản lý sách, theo dõi tiến trình đọc, đặt nhắc nhở đọc sách, gợi ý sách nên đọc,...
+Phần mềm được phát triển với mục đích học tập, không dùng cho mục đích thương mại.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Mọi thắc mắc, vấn đề xin liên hệ: +84962089334 hoặc facebook: https://www.facebook.com/ndminh1212
