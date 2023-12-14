@@ -1,7 +1,9 @@
 # personal_library
 
 Project môn Kỹ thuật phần mềm ứng dụng của Đại học Bách Khoa Hà Nội.
-Nhóm:   Nguyễn Đức Minh
+Nhóm:   
+
+        Nguyễn Đức Minh
 
         Trần Quang Minh
         
