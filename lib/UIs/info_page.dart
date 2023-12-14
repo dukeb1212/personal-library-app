@@ -4,9 +4,14 @@ import '../user_data.dart';
 import 'change_password_form.dart';
 import 'package:login_test/backend/password_backend.dart';
 
-class UserInfoPage extends StatelessWidget {
+class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
 
+  @override
+  State<UserInfoPage> createState() => _UserInfoPageState();
+}
+
+class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     final provider = container.read(userProvider);
@@ -48,14 +53,14 @@ class UserInfoPage extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Information')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
+            const Text('Thông tin người dùng'),
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(labelText: 'Họ và tên'),
             ),
             TextField(
               controller: emailController,
@@ -63,18 +68,18 @@ class UserInfoPage extends StatelessWidget {
             ),
             TextField(
               controller: ageController,
-              decoration: const InputDecoration(labelText: 'Age'),
+              decoration: const InputDecoration(labelText: 'Tuổi'),
             ),
             TextField(
               controller: usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(labelText: 'Tài khoản'),
             ),
 
             ElevatedButton(
               onPressed: () {
                 submit();
               },
-              child: const Text('Save Changes'),
+              child: const Text('Lưu thay đổi'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -83,7 +88,7 @@ class UserInfoPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const ChangePasswordPage()),
                 );
               },
-              child: const Text('Change Password'),
+              child: const Text('Đổi mật khẩu'),
             ),
           ],
         ),

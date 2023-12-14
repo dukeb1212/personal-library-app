@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +8,7 @@ import '../backend/google_books_api.dart';
 import '../book_data.dart';
 
 class DatabaseHelper {
-  final String _baseUrl = "http://192.168.1.120:3000";
+  final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? '';
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   late Database _db;
 
@@ -183,6 +184,47 @@ class DatabaseHelper {
       // Handle error
       print('Failed to fetch books from the server');
     }
+  }
+
+  Future<List<BookState>> getAllBookStates(int userId) async {
+    final List<Map<String, dynamic>> bookStatesData = await _db.query('books');
+    return bookStatesData.map((data) => _mapToBookState(data, userId)).toList();
+  }
+
+  Future<List<Book>> getAllBooks() async {
+    final List<Map<String, dynamic>> booksData = await _db.query('books');
+    return booksData.map((data) => _mapToBook(data)).toList();
+  }
+
+  BookState _mapToBookState(Map<String, dynamic> data, int userId) {
+    return BookState(
+      bookId: data['book_id'],
+      buyDate: data['buy_date'],
+      lastReadDate: DateTime.tryParse(data['last_read_date']) ?? DateTime.now(),
+      lastPageRead: data['last_page_read'],
+      percentRead: data['percent_read'].toDouble(),
+      totalReadHours: data['total_read_hour'].toDouble(),
+      addToFavorites: data['favorite'] == 1,
+      lastSeenPlace: data['last_seen_place'],
+      quotation: List<String>.from(data['quotation']?.split(', ') ?? []),
+      comment: List<String>.from(data['comment']?.split(', ') ?? []),
+      userId: userId,
+    );
+  }
+
+  Book _mapToBook(Map<String, dynamic> data) {
+    return Book(
+      id: data['book_id'],
+      title: data['title'],
+      subtitle: data['subtitle'],
+      authors: List<String>.from(data['authors']?.split(', ') ?? []),
+      categories: List<String>.from(data['categories']?.split(', ') ?? []),
+      publishedDate: data['published_date'] ?? '',
+      description: data['description'],
+      totalPages: data['total_pages'],
+      language: data['language'],
+      imageLinks: Map<String, String>.from(jsonDecode(data['image_links'] ?? '{}')),
+    );
   }
 }
 

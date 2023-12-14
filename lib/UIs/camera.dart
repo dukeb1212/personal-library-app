@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:barcode_scan2/gen/protos/protos.pb.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
@@ -30,30 +29,116 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Stack(
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: FutureBuilder<List<Book>>(
+                future: _getBooksFromDatabase(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text('No books found.');
+                  } else {
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        return _buildBookButton(snapshot.data![index]);
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          bottom: 16.0,
+          right: 16.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FloatingActionButton(
+                onPressed: () async {
+                  Book? book = await getBookByBarcode();
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookDetailsPage(book: book),
+                      ),
+                    );
+                  }
+                },
+                child: const Icon(Icons.qr_code_scanner),
+              ),
+              const SizedBox(height: 16.0),
+              FloatingActionButton(
+                onPressed: () {
+                  _showInputDialog();
+                },
+                child: const Icon(Icons.edit),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<List<Book>> _getBooksFromDatabase() async {
+    final databaseHelper = DatabaseHelper();
+    final List<Book> books = await databaseHelper.getAllBooks();
+    return books;
+  }
+
+  Widget _buildBookButton(Book book) {
+    // Implement the UI for a book button
+    // You can use ElevatedButton or any other widget you prefer
+    return Container(
+      margin: const EdgeInsets.all(8.0),
+      width: 140,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton(
-            onPressed: () async {
-              Book? book = await getBookByBarcode();
-              if (mounted) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BookDetailsPage(book: book),
-                  ),
-                );
-              }
-            },
-            child: const Text('Scan Barcode'),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
             onPressed: () {
-              _showInputDialog();
+              // Handle button press
             },
-            child: const Text('Enter Book Information'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+            ),
+            child: Container(
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15.0),
+                color: Colors.white,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15.0),
+                child: book.imageLinks.isNotEmpty
+                    ? Image.network(
+                  book.imageLinks['thumbnail'] ?? '', // Use the appropriate key for the thumbnail link
+                  fit: BoxFit.cover,
+                )
+                    : Container(), // Placeholder if the image link is empty
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            book.title,
+            style: const TextStyle(fontSize: 16),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

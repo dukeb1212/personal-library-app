@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/book_database.dart';
 import 'main_page.dart';
@@ -13,6 +14,8 @@ class AutomaticLogin extends StatefulWidget {
 }
 
 class _AutomaticLoginState extends State<AutomaticLogin> {
+  final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? '';
+
   @override
   void initState() {
     super.initState();
@@ -50,14 +53,12 @@ class _AutomaticLoginState extends State<AutomaticLogin> {
   }
 
   Future<bool> _attemptAutomaticLogin(String token) async {
-    const url =
-        'http://192.168.1.120:3000/validateToken'; // Replace with your server's validateToken endpoint
     final headers = {
       'Authorization': 'Bearer $token',
     };
 
     try {
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await http.get(Uri.parse(_baseUrl), headers: headers);
 
       if (response.statusCode == 200) {
         return true; // Token is valid
