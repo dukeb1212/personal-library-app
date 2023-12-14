@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
+import '../utils.dart';
 import 'register_page.dart';
 import 'main_page.dart';
 import 'package:login_test/backend/login_backend.dart';
@@ -60,47 +61,88 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Checkbox(
-                  value: _rememberMe,
-                  onChanged: (value) {
-                    setState(() {
-                      _rememberMe = value!;
-                    });
-                  },
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                margin: const EdgeInsets.all(25.0),
+                width: 157,
+                height: 145,
+                child: Image.asset(
+                  'assets/page-1/images/alpha-bookstorelogodark-ver-uUy.png',
+                  fit: BoxFit.cover,
                 ),
-                const Text('Remember Me'),
-              ],
-            ),
-            ElevatedButton(
-              onPressed: _submit,
-              child: const Text('Login'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
+              ),
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _rememberMe,
+                    onChanged: (value) {
+                      setState(() {
+                        _rememberMe = value!;
+                      });
+                    },
+                  ),
+                  const Text('Remember Me'),
+                ],
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: const Color(0xffffffff),
+                  backgroundColor: const Color(0xff404040),
+                ),
+                child: const Text('Login'),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  // Chuyển đến trang đăng ký
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterPage()));         },
-              child: const Text('Register Instead'),
-            ),
-          ],
+                    MaterialPageRoute(builder: (context) => const RegisterPage()),
+                  );
+                },
+                child: RichText(
+                  text: TextSpan(
+                    style: safeGoogleFont (
+                      'Inter',
+                      fontSize: 14,
+                      color: const Color(0xff8e8e93),
+                    ),
+                    children: [
+                      const TextSpan(
+                        text: 'Don’t have an account yet? ',
+                      ),
+                      TextSpan(
+                        text: 'Sign up here',
+                        style: safeGoogleFont(
+                          'Inter',
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xff8e8e93),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
