@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'info_page.dart';
 import 'my_library_page.dart';
-import 'camera.dart';
 
 class MyMainPage extends StatefulWidget {
   final int initialTabIndex;

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'UIs/login_page.dart';
 import 'UIs/automaticLogin.dart';
 import 'UIs/log_in.dart';
-import 'UIs/camera.dart';
+import 'UIs/my_library_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

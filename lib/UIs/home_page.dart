@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final provider = container.read(userProvider);
     final UserData? user = provider.user;
-    final username = user!.username;
+    final userName = user!.name;
 
     return Scaffold(
       body: Column(
@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                     text: 'Xin chào ',
                   ),
                   TextSpan(
-                    text: username,
+                    text: userName,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold, // Make the username bold
