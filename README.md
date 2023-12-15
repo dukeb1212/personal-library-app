@@ -19,4 +19,4 @@ Phần mềm được xây dựng để quản lý thư viện sách cá nhân c
 
 Phần mềm được phát triển với mục đích học tập, không dùng cho mục đích thương mại.
 
-Mọi thắc mắc, vấn đề xin liên hệ: +84962089334 hoặc facebook: https://www.facebook.com/ndminh1212
+Mọi thắc mắc, vấn đề xin liên hệ: +84962089334, facebook: https://www.facebook.com/ndminh1212 hoặc email: minhnguyenduke@gmail.com, Minh.nd210578@sis.hust.edu.vn
