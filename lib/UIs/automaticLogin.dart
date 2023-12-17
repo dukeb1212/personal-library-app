@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,7 +60,7 @@ class _AutomaticLoginState extends State<AutomaticLogin> {
     };
 
     try {
-      final response = await http.get(Uri.parse(_baseUrl), headers: headers);
+      final response = await http.get(Uri.parse('$_baseUrl/validateToken'), headers: headers);
 
       if (response.statusCode == 200) {
         return true; // Token is valid

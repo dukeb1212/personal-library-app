@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
     allBookStates.sort((a, b) => b.lastReadDate.compareTo(a.lastReadDate));
 
     // Take a subset of recently read books (adjust the number as needed)
-    recentlyReadBookStates = allBookStates.take(3).toList();
+    recentlyReadBookStates = allBookStates.take(5).toList();
     recentlyReadBooks = recentlyReadBookStates
         .map((bookState) => allBooks.firstWhere((book) => book.id == bookState.bookId,
         orElse: () => Book.defaultBook(),)).toList();

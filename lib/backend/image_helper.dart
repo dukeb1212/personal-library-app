@@ -41,7 +41,7 @@ class ImageHelper {
     return File(pickedFile.path);
   }
 
-  Future<String?> uploadImageToFirebaseStorage(String email, String password, File imageFile) async {
+  static Future<String?> uploadImageToFirebaseStorage(String email, String password, File imageFile) async {
     final FirebaseAuthService authService = FirebaseAuthService();
     User? user = await authService.signInWithEmailAndPassword(email, password);
 
@@ -51,16 +51,10 @@ class ImageHelper {
         firebase_storage.FirebaseStorage.instance.ref().child('images/${DateTime.now()}.png');
 
         firebase_storage.UploadTask uploadTask = storageReference.putFile(imageFile);
+        await uploadTask;
 
-        uploadTask.snapshotEvents.listen((firebase_storage.TaskSnapshot snapshot) {
-          print('Task state: ${snapshot.state}'); // Debugging purpose
-
-          if (snapshot.state == firebase_storage.TaskState.success) {
-            storageReference.getDownloadURL().then((String url) {
-              return url;
-            });
-          }
-        });
+        String url = await storageReference.getDownloadURL();
+        return url;
       } catch (e) {
         print('Error uploading image to Firebase Storage: $e');
         // Handle the error as needed

@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:login_test/backend/image_helper.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:login_test/backend/google_books_api.dart';
 import '../book_data.dart';
@@ -24,6 +25,7 @@ class BarcodeScannerPage extends StatefulWidget {
 }
 
 class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
+  String currentQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +44,9 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
                         hintText: 'Nhập tên sách hoặc tên tác giả',
                       ),
                       onChanged: (query) {
-                        // Implement your search logic here
-                        // Update the UI or filter the book list accordingly
+                        setState(() {
+                          currentQuery = query;
+                        });
                       },
                     ),
                   ),
@@ -51,8 +54,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () {
-                      // Implement your search logic here
-                      // Update the UI or filter the book list accordingly
+                        _updateBookList();
                     },
                   ),
                   // Stack or List icon
@@ -68,7 +70,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             const SizedBox(height: 15),
             Expanded(
               child: FutureBuilder<List<Book>>(
-                future: _getBooksFromDatabase(),
+                future: _getFilteredBooksFromDatabase(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
@@ -77,11 +79,20 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No books found.');
                   } else {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
+                    return GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 5.0, // Adjust the spacing as needed
+                        mainAxisSpacing: 35.0,
+                      ),
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        return _buildBookButton(snapshot.data![index]);
+                        return Flex(
+                          direction: Axis.vertical,
+                          children: [
+                            _buildBookButton(snapshot.data![index]),
+                          ],
+                        );
                       },
                     );
                   }
@@ -97,25 +108,27 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FloatingActionButton(
+                heroTag: 'barcode scanner',
                 onPressed: () async {
                   Book? book = await getBookByBarcode();
                   if (mounted) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BookDetailsPage(book: book),
+                        builder: (context) => AddBookDetailsPage(book: book),
                       ),
                     );
                   }
                 },
-                child: const Icon(Icons.qr_code_scanner),
+                child: Icon(MdiIcons.barcode),
               ),
               const SizedBox(height: 16.0),
               FloatingActionButton(
+                heroTag: 'manual add',
                 onPressed: () {
                   _showInputDialog();
                 },
-                child: const Icon(Icons.edit),
+                child: const Icon(Icons.add),
               ),
             ],
           ),
@@ -144,18 +157,30 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
     );
   }
 
-  Future<List<Book>> _getBooksFromDatabase() async {
+  Future<void> _updateBookList() async {
+    setState(() {});
+  }
+
+  Future<List<Book>> _getFilteredBooksFromDatabase() async {
     final databaseHelper = DatabaseHelper();
-    final List<Book> books = await databaseHelper.getAllBooks();
-    return books;
+    final List<Book> allBooks = await databaseHelper.getAllBooks();
+
+    // Filter books based on the search query
+    if (currentQuery.isEmpty) {
+      return allBooks; // Return all books if the query is empty
+    } else {
+      final String queryLowerCase = currentQuery.toLowerCase();
+      return allBooks.where((book) =>
+      book.title.toLowerCase().contains(queryLowerCase) ||
+          book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))
+      ).toList();
+    }
   }
 
   Widget _buildBookButton(Book book) {
     // Implement the UI for a book button
     // You can use ElevatedButton or any other widget you prefer
-    return Container(
-      margin: const EdgeInsets.all(8.0),
-      width: 140,
+    return Flexible(
       child: Column(
         children: [
           ElevatedButton(
@@ -185,7 +210,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             book.title,
             style: const TextStyle(fontSize: 16),
@@ -232,12 +257,13 @@ class _MyDialogState extends State<MyDialog> {
   List<int> years = List.generate(150, (int index) => DateTime.now().year - index);
   String? selectedLanguageCode;
   String? selectedYear;
-  final ImagePicker _picker = ImagePicker();
   String? _imageUrl;
   File? _imageFile;
 
   final databaseHelper = DatabaseHelper();
   final provider = container.read(userProvider);
+
+  final imageHelper = ImageHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -498,15 +524,21 @@ class _MyDialogState extends State<MyDialog> {
               decoration: const InputDecoration(labelText: 'Last Seen Place'),
             ),
             ElevatedButton(
-              onPressed: () {
-                _selectImage();
+              onPressed: () async{
+                final image = await imageHelper.selectImageFromGallery();
+                setState(() {
+                  _imageFile = image;
+                });
               },
               child: const Text('Choose Image'),
             ),
 
             ElevatedButton(
-              onPressed: () {
-                _takePicture();
+              onPressed: () async{
+                final image = await imageHelper.takePicture();
+                setState(() {
+                  _imageFile = image;
+                });
               },
               child: const Text('Take Picture'),
             ),
@@ -562,7 +594,8 @@ class _MyDialogState extends State<MyDialog> {
 
   Future<Map<String, dynamic>> addBook() async {
     // Upload image to Firebase Storage and get the URL
-    await _uploadImageToFirebaseStorage();
+    _imageUrl = await ImageHelper.uploadImageToFirebaseStorage(fbemail, fbpassword, _imageFile!);
+    print(_imageUrl);
     final newId = generateUniqueId();
     final UserData? userData = provider.user;
 
@@ -610,66 +643,6 @@ class _MyDialogState extends State<MyDialog> {
     } else {
       final result = await addBook();
       return result;
-    }
-  }
-  Future<void> _selectImage() async {
-    final pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 100,
-        maxHeight: 615,
-        maxWidth: 400
-    );
-    if (pickedFile == null) {
-      // User canceled taking a picture
-      return;
-    }
-
-    setState(() {
-      _imageFile = File(pickedFile.path);
-    });
-  }
-
-  Future<void> _takePicture() async {
-    final pickedFile = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 100,
-        maxHeight: 615,
-        maxWidth: 400
-    );
-    if (pickedFile == null) {
-      // User canceled taking a picture
-      return;
-    }
-
-    setState(() {
-      _imageFile = File(pickedFile.path);
-    });
-  }
-
-  Future<void> _uploadImageToFirebaseStorage() async {
-    final FirebaseAuthService authService = FirebaseAuthService();
-    User? user = await authService.signInWithEmailAndPassword(fbemail,fbpassword);
-
-    if(user != null){
-      try {
-        firebase_storage.Reference storageReference =
-        firebase_storage.FirebaseStorage.instance.ref().child('images/${DateTime.now()}.png');
-
-        firebase_storage.UploadTask uploadTask = storageReference.putFile(_imageFile!);
-
-        uploadTask.snapshotEvents.listen((firebase_storage.TaskSnapshot snapshot) {
-          print('Task state: ${snapshot.state}'); // Debugging purpose
-
-          if (snapshot.state == firebase_storage.TaskState.success) {
-            storageReference.getDownloadURL().then((String url) {
-              _imageUrl = url;
-            });
-          }
-        });
-      } catch (e) {
-        print('Error uploading image to Firebase Storage: $e');
-        // Handle the error as needed
-      }
     }
   }
 }

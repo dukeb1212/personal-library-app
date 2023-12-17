@@ -6,20 +6,30 @@ import '../backend/update_book_backend.dart';
 import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
+import 'package:login_test/backend/image_helper.dart';
 
-class BookDetailsPage extends StatefulWidget {
+class AddBookDetailsPage extends StatefulWidget {
   final Book? book;
 
-  const BookDetailsPage({Key? key, required this.book}) : super(key: key);
+  const AddBookDetailsPage({Key? key, required this.book}) : super(key: key);
 
   @override
-  _BookDetailsPageState createState() => _BookDetailsPageState();
+  _AddBookDetailsPageState createState() => _AddBookDetailsPageState();
 }
 
-class _BookDetailsPageState extends State<BookDetailsPage> {
+class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
   late TextEditingController buyDateController;
   late TextEditingController lastPageReadController;
   late TextEditingController lastSeenPlaceController;
+  String thumbnailLink = '';
+  Image bookCover = Image.asset(
+    'assets/default-book.png', // Provide the correct path to your default image
+    height: 500,
+    width: double.infinity,
+    fit: BoxFit.contain,
+  );
+  bool showText = false;
+  bool isImageSelected = false;
 
   @override
   void initState() {
@@ -28,6 +38,9 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     buyDateController = TextEditingController();
     lastPageReadController = TextEditingController();
     lastSeenPlaceController = TextEditingController();
+    // Retrieve image link from book object
+    final Map<String, String> imageLinks = widget.book?.imageLinks ?? {};
+    thumbnailLink = imageLinks['thumbnail'] ?? '';
   }
 
   @override
@@ -35,9 +48,124 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     final provider = container.read(userProvider);
     final UserData? userData = provider.user;
 
-    // Retrieve image link from book object
-    final Map<String, String> imageLinks = widget.book?.imageLinks ?? {};
-    final String thumbnailLink = imageLinks['thumbnail'] ?? '';
+    final imageHelper = ImageHelper();
+
+    Widget buildDefaultImage() {
+      return Image.asset(
+        'assets/default-book.png',
+        height: 500,
+        width: double.infinity,
+        fit: BoxFit.contain,
+      );
+    }
+
+    void setImage() {
+      if (thumbnailLink.isNotEmpty) {
+          bookCover = Image.network(
+            thumbnailLink,
+            height: 500, // Set to your desired height
+            width: double.infinity,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // If there's an error loading the image, set the showText flag to true
+              showText = true;
+              // Return the default image
+              return buildDefaultImage();
+            },
+          );
+      }
+    }
+
+    Widget buildBookImage(BuildContext context) {
+      setImage();
+      return Column(
+        children: [
+          Stack(
+            children: [
+              bookCover,
+              if (showText || thumbnailLink.isEmpty) // Show text only when there's an error loading the image
+                if (!isImageSelected)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.transparent, // Make the container transparent
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Không thể tìm thấy bìa sách, hãy thêm ảnh',
+                            style: TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (showText || thumbnailLink.isEmpty)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () async {
+                  final image = await imageHelper.selectImageFromGallery();
+                  if (image != null) {
+                    setState(() {
+                      bookCover = Image.file(
+                        image,
+                        height: 500,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      );
+                      isImageSelected = true; // Set showText to false after setting the image
+                    });
+                  }
+                  print('test');
+                },
+                child: const CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  radius: 32.0,
+                  child: Icon(
+                    Icons.photo_camera_back_outlined,
+                    color: Colors.white,
+                    size: 32.0,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final image = await imageHelper.takePicture();
+                  if (image != null) {
+                    setState(() {
+                      bookCover = Image.file(
+                        image,
+                        height: 500,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      );
+                      isImageSelected = true; // Set showText to false after setting the image
+                    });
+                  }
+                  print('test');
+                },
+                child: const CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  radius: 32.0,
+                  child: Icon(
+                    Icons.camera_alt_outlined,
+                    color: Colors.white,
+                    size: 32.0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -48,13 +176,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Display book image
-            if (thumbnailLink.isNotEmpty)
-              Image.network(
-                thumbnailLink,
-                height: 500, // Set to your desired height
-                width: double.infinity,
-                fit: BoxFit.contain,
-              ),
+            buildBookImage(context),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
