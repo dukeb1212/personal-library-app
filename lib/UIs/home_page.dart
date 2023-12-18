@@ -51,52 +51,82 @@ class _HomePageState extends State<HomePage> {
     final provider = container.read(userProvider);
     final UserData? user = provider.user;
     final userName = user!.name;
+    double baseWidth = 360;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 18, color: Colors.black), // Default style for the entire text
-                children: [
-                  const TextSpan(
-                    text: 'Xin chào ',
-                  ),
-                  TextSpan(
-                    text: userName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold, // Make the username bold
-                      color: Colors.blue, // Change the color to stand out
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 18, color: Colors.black), // Default style for the entire text
+                  children: [
+                    const TextSpan(
+                      text: 'Xin chào ',
                     ),
-                  ),
-                  const TextSpan(
-                    text: ',\nBạn muốn đọc sách gì hôm nay?',
-                  ),
-                ],
+                    TextSpan(
+                      text: userName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold, // Make the username bold
+                        color: Colors.blue, // Change the color to stand out
+                      ),
+                    ),
+                    const TextSpan(
+                      text: ',\nBạn muốn đọc sách gì hôm nay?',
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: const Text(
-              'Đã đọc gần đây',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Padding(
+              padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
+              child: Text(
+                'Recently',
+                style: TextStyle(
+                  fontSize: 25 * fem,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
-          SizedBox(
-            height: 200, // Adjust the height as needed
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: recentlyReadBookStates.map((bookState) {
-                // Build recently read book widgets
-                return _buildRecentlyReadBook(bookState);
-              }).toList(),
+            SizedBox(height: 10.0*fem,),
+            SizedBox(
+              height: 340, // Adjust the height as needed
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: recentlyReadBookStates.map((bookState) {
+                  // Build recently read book widgets
+                  return _buildRecentlyReadBook(bookState);
+                }).toList(),
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
+              child: Text(
+                'New Arrivals',
+                style: TextStyle(
+                  fontSize: 25 * fem,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: 10*fem,),
+            SizedBox(
+              height: 340, // Adjust the height as needed
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: recentlyReadBookStates.map((bookState) {
+                  // Build recently read book widgets
+                  return _buildRecentlyReadBook(bookState);
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -113,52 +143,59 @@ class _HomePageState extends State<HomePage> {
 
     final String timeAgo = timeago.format(bookState.lastReadDate, locale: 'en_short');
 
-    return Container(
-      margin: const EdgeInsets.all(8.0),
-      width: 140,
-      child: Column(
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              // Handle button press
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            ),
-            child: Container(
-              height: 100,
+    double fem = MediaQuery.of(context).size.width / 360;
+    double ffem = fem * 0.97;
+
+    Widget buildDefaultImage() {
+      return Image.asset(
+        'assets/default-book.png',
+        height: 500,
+        width: double.infinity,
+        fit: BoxFit.contain,
+      );
+    }
+
+    var bookCover = NetworkImage(foundBook.imageLinks['thumbnail']!);
+
+    return GestureDetector(
+      child: Container(
+        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+        width: 150 * fem,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 250 * fem,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                color: Colors.white,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: foundBook.imageLinks.isNotEmpty
-                    ? Image.network(
-                  foundBook.imageLinks['thumbnail'] ?? '', // Use the appropriate key for the thumbnail link
+                borderRadius: BorderRadius.circular(12 * fem),
+                image: DecorationImage(
+                  image: bookCover,
                   fit: BoxFit.cover,
-                )
-                    : Container(), // Placeholder if the image link is empty
+                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            foundBook.title,
-            style: const TextStyle(fontSize: 16),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            'Last Read: $timeAgo',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            SizedBox(height: 10 * fem),
+            Text(
+              foundBook.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16 * ffem,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Last Read: $timeAgo',
+              style: TextStyle(
+              fontSize: 16 * ffem,
+              color: Colors.grey,
+            ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

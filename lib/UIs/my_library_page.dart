@@ -27,8 +27,25 @@ class BarcodeScannerPage extends StatefulWidget {
 class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   String currentQuery = '';
 
+  List<String> categories = [];
+  int selectedCategoryIndex = 0;
+
+
+  Future<void> updateCategories() async {
+    final databaseHelper = DatabaseHelper();
+    categories = await databaseHelper.getTopCategories();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _updateBookList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    double baseWidth = 360;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
     return Stack(
       children: [
         Column(
@@ -68,6 +85,41 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
               ),
             ),
             const SizedBox(height: 15),
+            SizedBox(
+              height: 40 * fem, // Set the desired height
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 10,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8 * fem),
+                    child: TextButton(
+                      onPressed: () {
+                        // Handle category button press
+                        setState(() {
+                          selectedCategoryIndex = index;
+                        });
+                        print('Category selected: ${categories[index]}');
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: selectedCategoryIndex == index
+                            ? Colors.black
+                            : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
+                      ),
+                      child: Text(
+                        categories[index],
+                        style: TextStyle(
+                          fontSize: 14*fem,
+                          fontWeight: selectedCategoryIndex == index
+                              ? FontWeight.bold
+                              : FontWeight.normal, // Make the selected category bold
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
             Expanded(
               child: FutureBuilder<List<Book>>(
                 future: _getFilteredBooksFromDatabase(),
@@ -79,16 +131,12 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No books found.');
                   } else {
-                    return GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 5.0, // Adjust the spacing as needed
-                        mainAxisSpacing: 35.0,
-                      ),
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         return Flex(
-                          direction: Axis.vertical,
+                          direction: Axis.horizontal,
                           children: [
                             _buildBookButton(snapshot.data![index]),
                           ],
@@ -178,8 +226,54 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   }
 
   Widget _buildBookButton(Book book) {
+    double baseWidth = 360;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+
+    var bookCover = NetworkImage(book.imageLinks['thumbnail']!);
     // Implement the UI for a book button
     // You can use ElevatedButton or any other widget you prefer
+    return GestureDetector(
+      child: Container(
+        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+        width: 150 * fem,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 250 * fem,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12 * fem),
+                image: DecorationImage(
+                  image: bookCover,
+                  fit: BoxFit.cover,
+                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                ),
+              ),
+            ),
+            SizedBox(height: 10 * fem),
+            Text(
+              book.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16 * fem,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              book.authors[0],
+              style: TextStyle(
+                fontSize: 16 * fem,
+                color: Colors.grey,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+
     return Flexible(
       child: Column(
         children: [

@@ -59,6 +59,11 @@ class _MyMainPageState extends State<MyMainPage> {
       ),
       body: PageView(
         controller: pageController,
+        onPageChanged: (index) {
+          setState(() {
+            selectedTabIndex = index;
+          });
+        },
         children: [
           HomePage(),
           // const BookPage(),
