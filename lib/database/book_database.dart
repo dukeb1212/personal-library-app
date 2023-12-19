@@ -226,22 +226,6 @@ class DatabaseHelper {
       imageLinks: Map<String, String>.from(jsonDecode(data['image_links'] ?? '{}')),
     );
   }
-
-  Future<List<String>> getTopCategories() async {
-    final result = await _db.rawQuery('''
-      SELECT category, COUNT(*) as count
-      FROM (
-        SELECT TRIM(value) as category
-        FROM books, UNNEST(SPLIT(categories, ', ')) as value
-      )
-      WHERE category IS NOT NULL AND category <> ''
-      GROUP BY category
-      ORDER BY count DESC
-      LIMIT 10
-    ''');
-
-    return result.map<String>((data) => data['category'].toString()).toList();
-  }
 }
 
 

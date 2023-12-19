@@ -18,6 +18,7 @@ class AddBookDetailsPage extends StatefulWidget {
 }
 
 class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
+  late TextEditingController totalPagesController;
   late TextEditingController buyDateController;
   late TextEditingController lastPageReadController;
   late TextEditingController lastSeenPlaceController;
@@ -30,17 +31,20 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
   );
   bool showText = false;
   bool isImageSelected = false;
+  int? totalPages = 1;
 
   @override
   void initState() {
     super.initState();
     // Initialize controllers with existing book information
+    totalPagesController = TextEditingController();
     buyDateController = TextEditingController();
     lastPageReadController = TextEditingController();
     lastSeenPlaceController = TextEditingController();
     // Retrieve image link from book object
     final Map<String, String> imageLinks = widget.book?.imageLinks ?? {};
     thumbnailLink = imageLinks['thumbnail'] ?? '';
+    totalPages = widget.book?.totalPages != null && widget.book!.totalPages> 0 ? widget.book!.totalPages: 1;
   }
 
   @override
@@ -183,13 +187,23 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Display existing book information
-                  Text('Title: ${widget.book?.title ?? ''}'),
-                  Text('Subtitle: ${widget.book?.subtitle ?? ''}'),
-                  Text('Authors: ${widget.book?.authors ?? ''}'),
-                  Text('Categories: ${widget.book?.categories ?? ''}'),
+                  Text('Title: ${widget.book?.title ?? 'Unknown'}'),
+                  Text('Subtitle: ${widget.book?.subtitle ?? 'Unknown'}'),
+                  Text('Authors: ${widget.book?.authors ?? 'Unknown'}'),
+                  Text('Categories: ${widget.book?.categories ?? 'Unknown'}'),
                   Text('Published Year: ${widget.book?.publishedDate ?? ''}'),
                   Text('Description: ${widget.book?.description ?? ''}'),
-                  Text('Total Pages: ${widget.book?.totalPages ?? ''}'),
+                  if (totalPages == 1)
+                    TextField(
+                      controller: totalPagesController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Total Pages'),
+                      onChanged: (_) {
+                        totalPages = int.parse(totalPagesController.text);
+                      },
+                    ),
+                  if (totalPages != 1)
+                    Text('Total Pages: $totalPages'),
                   Text('Language: ${widget.book?.language ?? ''}'),
                   Text('ISBN: ${widget.book?.id ?? ''}'),
                   // Add other fields for displaying book information
@@ -226,7 +240,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                         borderSide: BorderSide(
                           color: lastPageReadController.text.isNotEmpty &&
                               int.tryParse(lastPageReadController.text) != null &&
-                              int.parse(lastPageReadController.text) > widget.book!.totalPages
+                              int.parse(lastPageReadController.text) > totalPages!
                               ? Colors.red
                               : Colors.transparent, // Set to transparent to remove the border
                         ),
@@ -238,7 +252,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                       ),
                       errorText: lastPageReadController.text.isNotEmpty &&
                           int.tryParse(lastPageReadController.text) != null &&
-                          int.parse(lastPageReadController.text) > widget.book!.totalPages
+                          int.parse(lastPageReadController.text) > totalPages!
                           ? 'Value must be less than or equal to total pages'
                           : null,
                     ),
@@ -266,7 +280,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                               buyDate: buyDateController.text,
                               lastReadDate: DateTime.now(),
                               lastPageRead: int.parse(lastPageReadController.text),
-                              percentRead: (int.parse(lastPageReadController.text)/widget.book!.totalPages*100).toDouble(),
+                              percentRead: (int.parse(lastPageReadController.text)/totalPages!*100).toDouble(),
                               totalReadHours: 0.0,
                               addToFavorites: false,
                               lastSeenPlace: lastSeenPlaceController.text,

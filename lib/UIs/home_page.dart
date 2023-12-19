@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                   style: const TextStyle(fontSize: 18, color: Colors.black), // Default style for the entire text
                   children: [
                     const TextSpan(
-                      text: 'Xin chào ',
+                      text: 'Welcome ',
                     ),
                     TextSpan(
                       text: userName,
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const TextSpan(
-                      text: ',\nBạn muốn đọc sách gì hôm nay?',
+                      text: ',\nWhat do you want to read today?',
                     ),
                   ],
                 ),
@@ -144,7 +144,6 @@ class _HomePageState extends State<HomePage> {
     final String timeAgo = timeago.format(bookState.lastReadDate, locale: 'en_short');
 
     double fem = MediaQuery.of(context).size.width / 360;
-    double ffem = fem * 0.97;
 
     Widget buildDefaultImage() {
       return Image.asset(
@@ -181,14 +180,14 @@ class _HomePageState extends State<HomePage> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 16 * ffem,
+                fontSize: 16 * fem,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               'Last Read: $timeAgo',
               style: TextStyle(
-              fontSize: 16 * ffem,
+              fontSize: 16 * fem,
               color: Colors.grey,
             ),
               maxLines: 1,

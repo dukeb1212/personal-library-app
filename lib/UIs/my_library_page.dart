@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -26,14 +27,29 @@ class BarcodeScannerPage extends StatefulWidget {
 
 class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   String currentQuery = '';
-
-  List<String> categories = [];
   int selectedCategoryIndex = 0;
 
 
-  Future<void> updateCategories() async {
+  Future<List<String>> _updateCategories() async {
     final databaseHelper = DatabaseHelper();
-    categories = await databaseHelper.getTopCategories();
+    final List<Book> allBooks = await databaseHelper.getAllBooks();
+
+    // Count occurrences of each category
+    final Map<String, int> categoryCount = HashMap();
+
+    for (final book in allBooks) {
+      for (final category in book.categories) {
+        categoryCount[category] = (categoryCount[category] ?? 0) + 1;
+      }
+    }
+
+    // Sort categories based on count in descending order
+    final sortedCategories = categoryCount.keys.toList()
+      ..sort((a, b) => categoryCount[b]!.compareTo(categoryCount[a]!));
+
+    // Take the top 10 categories
+    List<String> categories = sortedCategories.take(10).toList();
+    return categories;
   }
 
   @override
@@ -46,6 +62,8 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   Widget build(BuildContext context) {
     double baseWidth = 360;
     double fem = MediaQuery.of(context).size.width / baseWidth;
+
+
     return Stack(
       children: [
         Column(
@@ -58,7 +76,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
                   Expanded(
                     child: TextField(
                       decoration: const InputDecoration(
-                        hintText: 'Nhập tên sách hoặc tên tác giả',
+                        hintText: 'Enter title or author',
                       ),
                       onChanged: (query) {
                         setState(() {
@@ -87,36 +105,49 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             const SizedBox(height: 15),
             SizedBox(
               height: 40 * fem, // Set the desired height
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8 * fem),
-                    child: TextButton(
-                      onPressed: () {
-                        // Handle category button press
-                        setState(() {
-                          selectedCategoryIndex = index;
-                        });
-                        print('Category selected: ${categories[index]}');
+              child: FutureBuilder<List<String>>(
+                future: _updateCategories(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text('');
+                  } else {
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: snapshot.data?.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8 * fem),
+                          child: TextButton(
+                            onPressed: () {
+                              // Handle category button press
+                              setState(() {
+                                selectedCategoryIndex = index;
+                              });
+                              print('Category selected: ${snapshot.data![index]}');
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: selectedCategoryIndex == index
+                                  ? Colors.black
+                                  : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
+                            ),
+                            child: Text(
+                              snapshot.data![index],
+                              style: TextStyle(
+                                fontSize: 14*fem,
+                                fontWeight: selectedCategoryIndex == index
+                                    ? FontWeight.bold
+                                    : FontWeight.normal, // Make the selected category bold
+                              ),
+                            ),
+                          ),
+                        );
                       },
-                      style: TextButton.styleFrom(
-                        foregroundColor: selectedCategoryIndex == index
-                            ? Colors.black
-                            : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
-                      ),
-                      child: Text(
-                        categories[index],
-                        style: TextStyle(
-                          fontSize: 14*fem,
-                          fontWeight: selectedCategoryIndex == index
-                              ? FontWeight.bold
-                              : FontWeight.normal, // Make the selected category bold
-                        ),
-                      ),
-                    ),
-                  );
+                    );
+                  }
                 },
               ),
             ),
@@ -273,47 +304,6 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
         ),
       ),
     );
-
-    return Flexible(
-      child: Column(
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              // Handle button press
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-            ),
-            child: Container(
-              height: 100,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                color: Colors.white,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15.0),
-                child: book.imageLinks.isNotEmpty
-                    ? Image.network(
-                  book.imageLinks['thumbnail'] ?? '', // Use the appropriate key for the thumbnail link
-                  fit: BoxFit.cover,
-                )
-                    : Container(), // Placeholder if the image link is empty
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            book.title,
-            style: const TextStyle(fontSize: 16),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _showInputDialog() async {
@@ -421,7 +411,7 @@ class _MyDialogState extends State<MyDialog> {
                 Expanded(
                   child: Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      return bookCategoriesVietnamese
+                      return bookCategories
                           .where((category) => category.toLowerCase().contains(textEditingValue.text.toLowerCase()))
                           .toList();
                     },
@@ -467,7 +457,7 @@ class _MyDialogState extends State<MyDialog> {
                   onPressed: () {
                     // Check if the entered category is not empty and is in the available list
                     String newCategory = categoriesController.text.trim();
-                    if (newCategory.isNotEmpty && bookCategoriesVietnamese.contains(newCategory) && !selectedCategories.contains(newCategory)) {
+                    if (newCategory.isNotEmpty && bookCategories.contains(newCategory) && !selectedCategories.contains(newCategory)) {
                       setState(() {
                         selectedCategories.add(newCategory);
                         // Clear the value of the controller
@@ -689,7 +679,6 @@ class _MyDialogState extends State<MyDialog> {
   Future<Map<String, dynamic>> addBook() async {
     // Upload image to Firebase Storage and get the URL
     _imageUrl = await ImageHelper.uploadImageToFirebaseStorage(fbemail, fbpassword, _imageFile!);
-    print(_imageUrl);
     final newId = generateUniqueId();
     final UserData? userData = provider.user;
 
