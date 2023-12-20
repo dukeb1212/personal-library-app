@@ -20,26 +20,27 @@ class DatabaseHelper {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, '$username.db');
 
-    const String booksTable = '''CREATE TABLE books (
-    book_id TEXT PRIMARY KEY,
+    const String booksTable = '''
+    CREATE TABLE books (
+        book_id TEXT PRIMARY KEY,
         title TEXT,
-    subtitle TEXT,
-    authors TEXT,
-    category TEXT,
-    published_date TEXT,
-    description TEXT,
-    total_pages INTEGER,
-    language TEXT,
-    image_links TEXT,
-    buy_date TEXT,
-    last_read_date TEXT,
-    last_page_read INTEGER,
-    percent_read REAL,
-    total_read_hour REAL,
-    favorite INTEGER,
-    last_seen_place TEXT,
-    quotation TEXT,
-    comment TEXT
+        subtitle TEXT,
+        authors TEXT,
+        category TEXT,
+        published_date TEXT,
+        description TEXT,
+        total_pages INTEGER,
+        language TEXT,
+        image_links TEXT,
+        buy_date TEXT,
+        last_read_date TEXT,
+        last_page_read INTEGER,
+        percent_read REAL,
+        total_read_hour REAL,
+        favorite INTEGER,
+        last_seen_place TEXT,
+        quotation TEXT,
+        comment TEXT
     );''';
 
     const String authorsTable = '''
