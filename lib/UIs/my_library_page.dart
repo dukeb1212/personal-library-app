@@ -249,8 +249,18 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
       final String queryLowerCase = currentQuery.toLowerCase();
       return allBooks.where((book) =>
       book.title.toLowerCase().contains(queryLowerCase) ||
-          book.author.toLowerCase().contains(queryLowerCase)
+          book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))
       ).toList();
+    }
+  }
+
+  String _truncateAuthorName(String authorName) {
+    const maxLength = 7;
+
+    if (authorName.length > maxLength) {
+      return '${authorName.substring(0, maxLength)}...';
+    } else {
+      return authorName;
     }
   }
 
@@ -290,7 +300,9 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
               ),
             ),
             Text(
-              book.author,
+              book.authors.length > 1
+                  ? '${_truncateAuthorName(book.authors[0])}, ${_truncateAuthorName(book.authors[1])}'
+                  : book.authors[0],
               style: TextStyle(
                 fontSize: 16 * fem,
                 color: Colors.grey,
@@ -333,6 +345,7 @@ class _MyDialogState extends State<MyDialog> {
   TextEditingController lastPageReadController = TextEditingController();
   TextEditingController lastSeenPlaceController = TextEditingController();
 
+  List<String> authors = [];
   List<int> years = List.generate(150, (int index) => DateTime.now().year - index);
   String? selectedLanguageCode;
   String? selectedYear;
@@ -361,10 +374,46 @@ class _MyDialogState extends State<MyDialog> {
               controller: subtitleController,
               decoration: const InputDecoration(labelText: 'Subtitle'),
             ),
-            TextField(
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
                     controller: authorController,
-                    decoration: const InputDecoration(labelText: 'Author'),
+                    decoration: const InputDecoration(
+                        labelText: 'Author'),
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    // Check if the entered author is not empty and is not already in the list
+                    String newAuthor = authorController.text.trim();
+                    if (newAuthor.isNotEmpty &&
+                        !authors.contains(newAuthor)) {
+                      setState(() {
+                        authors.add(newAuthor);
+                      });
+                      // Clear the value of the controller
+                      authorController.clear();
+                    }
+                  },
+                ),
+              ],
+            ),
+            Wrap(
+              spacing: 8.0, // Adjust spacing as needed
+              children: authors.map((author) {
+                return Chip(
+                  label: Text(author),
+                  deleteIcon: const Icon(Icons.close),
+                  onDeleted: () {
+                    setState(() {
+                      authors.remove(author);
+                    });
+                  },
+                );
+              }).toList(),
+            ),
             Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       return bookCategories
@@ -557,6 +606,7 @@ class _MyDialogState extends State<MyDialog> {
       actions: [
         TextButton(
           onPressed: () {
+            authors = [];
             _imageFile = null;
             Navigator.of(context).pop(false); // Close the dialog and return false
           },
@@ -608,8 +658,8 @@ class _MyDialogState extends State<MyDialog> {
       Book book = Book(
           id: newId,
           title: titleController.text,
-          subtitle: '',
-          author: authorController.text,
+          subtitle: subtitleController.text,
+          authors: authors,
           category: categoryController.text,
           publishedDate: selectedYear ?? 'unk',
           description: descriptionController.text,

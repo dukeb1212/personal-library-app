@@ -37,6 +37,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
   TextEditingController lastPageReadController = TextEditingController();
   TextEditingController lastSeenPlaceController = TextEditingController();
   String thumbnailLink = '';
+  List<String> authors = [];
   Image bookCover = Image.asset(
     'assets/default-book.png', // Provide the correct path to your default image
     height: 500,
@@ -56,12 +57,13 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
     super.initState();
     titleController.text = widget.book!.title;
     subtitleController.text = widget.book!.subtitle;
-    authorController.text = widget.book!.author;
+    authors = widget.book!.authors;
     categoryController.text = widget.book!.category;
     publishedDateController.text = widget.book!.publishedDate;
     descriptionController.text = widget.book!.description;
     totalPagesController.text = widget.book!.totalPages.toString();
-    languageController.text = widget.book!.language;
+    selectedLanguageCode = widget.book!.language;
+    languageController.text = '${languageMap.keys.firstWhere((key) => languageMap[key] == selectedLanguageCode)} ($selectedLanguageCode)';
     // Retrieve image link from book object
     final Map<String, String> imageLinks = widget.book?.imageLinks ?? {};
     thumbnailLink = imageLinks['thumbnail'] ?? imageLinks['smallThumbnail'] ?? '';
@@ -73,6 +75,12 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
     final UserData? userData = provider.user;
 
     final imageHelper = ImageHelper();
+    bool isTextFieldValid() {
+      return lastPageReadController.text.isEmpty ||
+          (int.tryParse(lastPageReadController.text) != null &&
+              int.parse(lastPageReadController.text) <= int.parse(totalPagesController.text));
+    }
+
 
     Widget buildDefaultImage() {
       return Image.asset(
@@ -102,6 +110,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
 
     Widget buildBookImage(BuildContext context) {
       setImage();
+      print(authors);
       return Column(
         children: [
           Stack(
@@ -138,6 +147,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                   final image = await imageHelper.selectImageFromGallery();
                   if (image != null) {
                     setState(() {
+                      _imageFile = image;
                       bookCover = Image.file(
                         image,
                         height: 500,
@@ -164,6 +174,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                   final image = await imageHelper.takePicture();
                   if (image != null) {
                     setState(() {
+                      _imageFile = image;
                       bookCover = Image.file(
                         image,
                         height: 500,
@@ -215,9 +226,45 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                     controller: subtitleController,
                     decoration: const InputDecoration(labelText: 'Subtitle'),
                   ),
-                  TextField(
-                    controller: authorController,
-                    decoration: const InputDecoration(labelText: 'Author'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: authorController,
+                          decoration: const InputDecoration(
+                              labelText: 'Author'),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () {
+                          // Check if the entered author is not empty and is not already in the list
+                          String newAuthor = authorController.text.trim();
+                          if (newAuthor.isNotEmpty &&
+                              !authors.contains(newAuthor)) {
+                            setState(() {
+                              authors.add(newAuthor);
+                            });
+                            // Clear the value of the controller
+                            authorController.clear();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 8.0, // Adjust spacing as needed
+                    children: authors.map((author) {
+                      return Chip(
+                        label: Text(author),
+                        deleteIcon: const Icon(Icons.close),
+                        onDeleted: () {
+                          setState(() {
+                            authors.remove(author);
+                          });
+                        },
+                      );
+                    }).toList(),
                   ),
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
@@ -232,7 +279,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                     },
                     fieldViewBuilder: (BuildContext context, TextEditingController fieldController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
                       return TextField(
-                        controller: fieldController,
+                        controller: categoryController,
                         focusNode: fieldFocusNode,
                         decoration: const InputDecoration(labelText: 'Categories'),
                       );
@@ -399,7 +446,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                         child: const Text('Cancel'),
                       ),
                       ElevatedButton(
-                        onPressed: () async {
+                        onPressed: isTextFieldValid() ? () async {
                           final result = await addBook();
 
                           if (mounted) {
@@ -427,7 +474,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
                               );
                             }
                           }
-                        },
+                        } : null,
                         child: const Text('Save'),
                       ),
                     ],
@@ -446,6 +493,7 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
       // Upload image to Firebase Storage and get the URL
       _imageUrl = await ImageHelper.uploadImageToFirebaseStorage(fbemail, fbpassword, _imageFile!);
     }
+    print(_imageUrl);
 
     final provider = container.read(userProvider);
     final UserData? userData = provider.user;
@@ -455,9 +503,9 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
           id: widget.book!.id,
           title: titleController.text,
           subtitle: subtitleController.text,
-          author: authorController.text,
+          authors: authors,
           category: categoryController.text,
-          publishedDate: selectedYear ?? 'unk',
+          publishedDate: publishedDateController.text ?? 'unk',
           description: descriptionController.text,
           totalPages: int.parse(totalPagesController.text),
           language: selectedLanguageCode ?? 'unk',

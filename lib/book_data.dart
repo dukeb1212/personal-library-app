@@ -7,7 +7,7 @@ class Book {
   final String id;
   final String title;
   final String subtitle;
-  final String author;
+  final List<String> authors;
   final String category;
   final String publishedDate;
   final String description;
@@ -19,7 +19,7 @@ class Book {
     required this.id,
     required this.title,
     required this.subtitle,
-    required this.author,
+    required this.authors,
     required this.category,
     required this.publishedDate,
     required this.description,
@@ -33,7 +33,7 @@ class Book {
       'id': id,
       'title': title,
       'subtitle': subtitle,
-      'author': author,
+      'authors': authors.join(', '),
       'category': category,
       'publishedDate': publishedDate,
       'description': description,
@@ -48,7 +48,7 @@ class Book {
       id: map['id'],
       title: map['title'],
       subtitle: map['subtitle'],
-      author: map['author'],
+      authors: List<String>.from(map['authors'] ?? []),
       category: map['category'],
       publishedDate: map['publishedDate'],
       description: map['description'],
@@ -66,7 +66,7 @@ class Book {
       id: volumeInfo['id'],
       title: volumeInfo['title'] ?? 'Unknown',
       subtitle: volumeInfo['subtitle'] ?? '',
-      author: volumeInfo['author'] ?? '',
+      authors: List<String>.from(volumeInfo['authors'] ?? ['Unknown']),
       category: volumeInfo['category'] ?? 'Unknown',
       publishedDate: volumeInfo['publishedDate'] ?? '',
       description: volumeInfo['description'] ?? '',
@@ -84,7 +84,7 @@ class Book {
       id: '',
       title: 'Unknown',
       subtitle: 'Unknown',
-      author: 'Unknown',
+      authors: ['Unknown'],
       category: 'Unknown',
       publishedDate: '2022-01-01',
       description: 'Unknown',

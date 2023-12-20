@@ -20,7 +20,7 @@ class UpdateBookBackend {
       'book_id': book.id,
       'title': book.title,
       'subtitle': book.subtitle,
-      'author': book.author,
+      'authors': book.authors,
       'category': book.category,
       'publishedDate': book.publishedDate,
       'description': book.description,
