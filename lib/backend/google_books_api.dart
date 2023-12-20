@@ -70,10 +70,10 @@ Future<Map<String, dynamic>> getBookByISBN(String isbn) async {
           bookInfo['subtitle'] = volumeInfo['subtitle'];
         }
         if (volumeInfo.containsKey('authors')) {
-          bookInfo['authors'] = volumeInfo['authors'];
+          bookInfo['author'] = volumeInfo['authors'][0];
         }
         if (volumeInfo.containsKey('categories')) {
-          bookInfo['categories'] = volumeInfo['categories'];
+          bookInfo['category'] = volumeInfo['categories'][0];
         }
         if (volumeInfo.containsKey('publishedDate')) {
           bookInfo['publishedDate'] = volumeInfo['publishedDate'];

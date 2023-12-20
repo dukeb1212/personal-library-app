@@ -20,8 +20,8 @@ class UpdateBookBackend {
       'book_id': book.id,
       'title': book.title,
       'subtitle': book.subtitle,
-      'authors': book.authors,
-      'categories': book.categories,
+      'author': book.author,
+      'category': book.category,
       'publishedDate': book.publishedDate,
       'description': book.description,
       'totalPages': book.totalPages,
@@ -56,7 +56,7 @@ class UpdateBookBackend {
     }
   }
 
-  Future<Map<String, dynamic>> addOrUpdateGoogleBook(BookState? bookState) async {
+  Future<Map<String, dynamic>> addBookToLibrary(BookState? bookState) async {
     if (bookState == null) {
       return {
         'success': false,
@@ -79,7 +79,7 @@ class UpdateBookBackend {
 
     try {
       final response = await http.post(
-        Uri.parse("$_baseUrl/addOrUpdateGoogleBook"),
+        Uri.parse("$_baseUrl/addBookToLibrary"),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );

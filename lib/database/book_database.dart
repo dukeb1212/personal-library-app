@@ -31,8 +31,8 @@ class DatabaseHelper {
             book_id TEXT PRIMARY KEY,
             title TEXT,
             subtitle TEXT,
-            authors TEXT,
-            categories TEXT,
+            author TEXT,
+            category TEXT,
             published_date TEXT,
             description TEXT,
             total_pages INTEGER,
@@ -79,13 +79,12 @@ class DatabaseHelper {
 
       Map<String, dynamic> bookMap = {};
 
-      if(bookData['title'] != null) {
         Book book = Book(
           id: bookData['book_id'],
           title: bookData['title'],
           subtitle: bookData['subtitle'],
-          authors: List<String>.from(bookData['authors'] ?? []),
-          categories: List<String>.from(bookData['categories'] ?? []),
+          author: bookData ['author_name'],
+          category: bookData['category_name'],
           publishedDate: bookData['published_date'] ?? '',
           description: bookData['description'],
           totalPages: bookData['total_pages'],
@@ -98,8 +97,8 @@ class DatabaseHelper {
           'book_id': book.id,
           'title': book.title,
           'subtitle': book.subtitle,
-          'authors': book.authors.join(', '),
-          'categories': book.categories.join(', '),
+          'author': book.author,
+          'category': book.category,
           'published_date': book.publishedDate,
           'description': book.description,
           'total_pages': book.totalPages,
@@ -115,37 +114,6 @@ class DatabaseHelper {
           'quotation': bookState.quotation.join(', '),
           'comment': bookState.comment.join(', ')
         };
-
-      } else {
-        final result = await getBookByISBN(bookState.bookId);
-        if (result['success']) {
-          final bookInfo = result['bookInfo'];
-          Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
-          bookMap = {
-            'book_id': retrievedBook.id,
-            'title': retrievedBook.title,
-            'subtitle': retrievedBook.subtitle,
-            'authors': retrievedBook.authors.join(', '),
-            'categories': retrievedBook.categories.join(', '),
-            'published_date': retrievedBook.publishedDate,
-            'description': retrievedBook.description,
-            'total_pages': retrievedBook.totalPages,
-            'language': retrievedBook.language,
-            'image_links': jsonEncode(retrievedBook.imageLinks),
-            'buy_date': bookState.buyDate,
-            'last_read_date': bookData['last_read_date'],
-            'last_page_read': bookState.lastPageRead,
-            'percent_read': bookState.percentRead,
-            'total_read_hour': bookState.totalReadHours,
-            'favorite': bookState.addToFavorites ? 1 : 0,
-            'last_seen_place': bookData['last_seen_place'],
-            'quotation': bookState.quotation.join(', '),
-            'comment': bookState.comment.join(', ')
-          };
-        } else {
-          print('Error: ${result['message']}'); // or handle the error appropriately
-        }
-      }
 
       if (existingBookIds.contains(bookId)) {
         // Book exists, perform an update
@@ -217,8 +185,8 @@ class DatabaseHelper {
       id: data['book_id'],
       title: data['title'],
       subtitle: data['subtitle'],
-      authors: List<String>.from(data['authors']?.split(', ') ?? []),
-      categories: List<String>.from(data['categories']?.split(', ') ?? []),
+      author: data['author'],
+      category: data['category'],
       publishedDate: data['published_date'] ?? '',
       description: data['description'],
       totalPages: data['total_pages'],

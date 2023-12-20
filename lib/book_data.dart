@@ -7,8 +7,8 @@ class Book {
   final String id;
   final String title;
   final String subtitle;
-  final List<String> authors;
-  final List<String> categories;
+  final String author;
+  final String category;
   final String publishedDate;
   final String description;
   final int totalPages;
@@ -19,8 +19,8 @@ class Book {
     required this.id,
     required this.title,
     required this.subtitle,
-    required this.authors,
-    required this.categories,
+    required this.author,
+    required this.category,
     required this.publishedDate,
     required this.description,
     required this.totalPages,
@@ -33,8 +33,8 @@ class Book {
       'id': id,
       'title': title,
       'subtitle': subtitle,
-      'authors': authors.join(', '),
-      'categories': categories.join(', '),
+      'author': author,
+      'category': category,
       'publishedDate': publishedDate,
       'description': description,
       'totalPages': totalPages,
@@ -48,8 +48,8 @@ class Book {
       id: map['id'],
       title: map['title'],
       subtitle: map['subtitle'],
-      authors: List<String>.from(map['authors'] ?? []),
-      categories: List<String>.from(map['categories'] ?? []),
+      author: map['author'],
+      category: map['category'],
       publishedDate: map['publishedDate'],
       description: map['description'],
       totalPages: map['totalPages'],
@@ -66,8 +66,8 @@ class Book {
       id: volumeInfo['id'],
       title: volumeInfo['title'] ?? 'Unknown',
       subtitle: volumeInfo['subtitle'] ?? '',
-      authors: List<String>.from(volumeInfo['authors'] ?? ['Unknown']),
-      categories: List<String>.from(volumeInfo['categories'] ?? ['Unknown']),
+      author: volumeInfo['author'] ?? '',
+      category: volumeInfo['category'] ?? 'Unknown',
       publishedDate: volumeInfo['publishedDate'] ?? '',
       description: volumeInfo['description'] ?? '',
       totalPages: volumeInfo['pageCount'] ?? 1,
@@ -84,8 +84,8 @@ class Book {
       id: '',
       title: 'Unknown',
       subtitle: 'Unknown',
-      authors: ['Unknown'],
-      categories: [''],
+      author: 'Unknown',
+      category: 'Unknown',
       publishedDate: '2022-01-01',
       description: 'Unknown',
       totalPages: 300,

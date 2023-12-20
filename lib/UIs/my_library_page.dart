@@ -38,9 +38,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
     final Map<String, int> categoryCount = HashMap();
 
     for (final book in allBooks) {
-      for (final category in book.categories) {
-        categoryCount[category] = (categoryCount[category] ?? 0) + 1;
-      }
+        categoryCount[book.category] = (categoryCount[book.category] ?? 0) + 1;
     }
 
     // Sort categories based on count in descending order
@@ -251,7 +249,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
       final String queryLowerCase = currentQuery.toLowerCase();
       return allBooks.where((book) =>
       book.title.toLowerCase().contains(queryLowerCase) ||
-          book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))
+          book.author.toLowerCase().contains(queryLowerCase)
       ).toList();
     }
   }
@@ -292,7 +290,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
               ),
             ),
             Text(
-              book.authors[0],
+              book.author,
               style: TextStyle(
                 fontSize: 16 * fem,
                 color: Colors.grey,
@@ -324,8 +322,8 @@ class MyDialog extends StatefulWidget {
 class _MyDialogState extends State<MyDialog> {
   TextEditingController titleController = TextEditingController();
   TextEditingController subtitleController = TextEditingController();
-  TextEditingController authorsController = TextEditingController();
-  TextEditingController categoriesController = TextEditingController();
+  TextEditingController authorController = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
   TextEditingController publishedDateController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController totalPagesController = TextEditingController();
@@ -335,9 +333,6 @@ class _MyDialogState extends State<MyDialog> {
   TextEditingController lastPageReadController = TextEditingController();
   TextEditingController lastSeenPlaceController = TextEditingController();
 
-
-  List<String> authors = [];
-  List<String> selectedCategories = [];
   List<int> years = List.generate(150, (int index) => DateTime.now().year - index);
   String? selectedLanguageCode;
   String? selectedYear;
@@ -366,58 +361,19 @@ class _MyDialogState extends State<MyDialog> {
               controller: subtitleController,
               decoration: const InputDecoration(labelText: 'Subtitle'),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: authorsController,
-                    decoration: const InputDecoration(
-                        labelText: 'Author'),
+            TextField(
+                    controller: authorController,
+                    decoration: const InputDecoration(labelText: 'Author'),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    // Check if the entered author is not empty and is not already in the list
-                    String newAuthor = authorsController.text.trim();
-                    if (newAuthor.isNotEmpty &&
-                        !authors.contains(newAuthor)) {
-                      setState(() {
-                        authors.add(newAuthor);
-                      });
-                      // Clear the value of the controller
-                      authorsController.clear();
-                    }
-                  },
-                ),
-              ],
-            ),
-            Wrap(
-              spacing: 8.0, // Adjust spacing as needed
-              children: authors.map((author) {
-                return Chip(
-                  label: Text(author),
-                  deleteIcon: const Icon(Icons.close),
-                  onDeleted: () {
-                    setState(() {
-                      authors.remove(author);
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Autocomplete<String>(
+            Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       return bookCategories
                           .where((category) => category.toLowerCase().contains(textEditingValue.text.toLowerCase()))
                           .toList();
                     },
-                    onSelected: (String selectedCategory) {
+                    onSelected: (selectedCategory) {
                       setState(() {
-                        categoriesController.text = selectedCategory;
+                        categoryController.text = selectedCategory;
                       });
                     },
                     fieldViewBuilder: (BuildContext context, TextEditingController fieldController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
@@ -451,38 +407,6 @@ class _MyDialogState extends State<MyDialog> {
                       );
                     },
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    // Check if the entered category is not empty and is in the available list
-                    String newCategory = categoriesController.text.trim();
-                    if (newCategory.isNotEmpty && bookCategories.contains(newCategory) && !selectedCategories.contains(newCategory)) {
-                      setState(() {
-                        selectedCategories.add(newCategory);
-                        // Clear the value of the controller
-                        categoriesController.clear();
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-
-            Wrap(
-              spacing: 8.0, // Adjust spacing as needed
-              children: selectedCategories.map((category) {
-                return Chip(
-                  label: Text(category),
-                  deleteIcon: const Icon(Icons.close),
-                  onDeleted: () {
-                    setState(() {
-                      selectedCategories.remove(category);
-                    });
-                  },
-                );
-              }).toList(),
-            ),
             TextFormField(
               controller: publishedDateController,
               readOnly: true,
@@ -633,8 +557,6 @@ class _MyDialogState extends State<MyDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            authors = [];
-            selectedCategories = [];
             _imageFile = null;
             Navigator.of(context).pop(false); // Close the dialog and return false
           },
@@ -687,8 +609,8 @@ class _MyDialogState extends State<MyDialog> {
           id: newId,
           title: titleController.text,
           subtitle: '',
-          authors: authors,
-          categories: selectedCategories,
+          author: authorController.text,
+          category: categoryController.text,
           publishedDate: selectedYear ?? 'unk',
           description: descriptionController.text,
           totalPages: int.parse(totalPagesController.text),
@@ -712,7 +634,7 @@ class _MyDialogState extends State<MyDialog> {
 
       final updateBackend = UpdateBookBackend();
       final bookResult = await updateBackend.addOrUpdateBook(book);
-      final stateResult = await updateBackend.addOrUpdateGoogleBook(bookState);
+      final stateResult = await updateBackend.addBookToLibrary(bookState);
 
       Map<String, dynamic> result = {};
       if(bookResult['success'] && stateResult['success']) {
