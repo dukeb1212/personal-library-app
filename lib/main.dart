@@ -30,7 +30,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Authentication App',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+          primarySwatch: Colors.brown,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          focusColor: Colors.grey,
+          splashColor: const Color(0xff505050)
+      ),
       home: const AutomaticLogin(),
       initialRoute: '/',
       routes: {

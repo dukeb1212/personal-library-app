@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/backend/image_helper.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:intl/intl.dart';
@@ -18,14 +19,14 @@ import 'add_book_page.dart';
 String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
 String fbpassword = dotenv.env['FIREBASE_PASSWORD'] ?? '';
 
-class BarcodeScannerPage extends StatefulWidget {
-  const BarcodeScannerPage({super.key});
+class MyLibraryPage extends StatefulWidget {
+  const MyLibraryPage({super.key});
 
   @override
-  _BarcodeScannerPageState createState() => _BarcodeScannerPageState();
+  _MyLibraryPageState createState() => _MyLibraryPageState();
 }
 
-class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
+class _MyLibraryPageState extends State<MyLibraryPage> {
   String currentQuery = '';
   int selectedCategoryIndex = 0;
 
@@ -186,16 +187,28 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             children: [
               FloatingActionButton(
                 heroTag: 'barcode scanner',
-                onPressed: () async {
-                  Book? book = await getBookByBarcode();
-                  if (mounted) {
-                    Navigator.push(
+                onPressed: () {
+                  // Book? book = await getBookByBarcode();
+                  // if (mounted) {
+                  //   if (book != null) {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => AddBookDetailsPage(book: book),
+                  //       ),
+                  //     );
+                  //   } else {
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       const SnackBar(content: Text('Cannot find the book, please try another one!')),
+                  //     );
+                  //   }
+                  // }
+                  Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AddBookDetailsPage(book: book),
+                      builder: (context) => AddBookScreen(book: Book.defaultBook()),
                       ),
-                    );
-                  }
+                  );
                 },
                 child: Icon(MdiIcons.barcode),
               ),

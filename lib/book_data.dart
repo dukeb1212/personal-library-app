@@ -82,13 +82,13 @@ class Book {
   factory Book.defaultBook() {
     return Book(
       id: '',
-      title: 'Unknown',
-      subtitle: 'Unknown',
-      authors: ['Unknown'],
+      title: '',
+      subtitle: '',
+      authors: [],
       category: 'Unknown',
-      publishedDate: '2022-01-01',
-      description: 'Unknown',
-      totalPages: 300,
+      publishedDate: '',
+      description: '',
+      totalPages: 1,
       language: 'en',
       imageLinks: {'thumbnail': ''},
     );

@@ -108,7 +108,7 @@ class DatabaseHelper {
       String bookId = bookData['book_id'];
       BookState bookState = BookState(
           bookId: bookData['book_id'],
-          buyDate: bookData['buy_date'],
+          buyDate: bookData['buy_date'] ?? '',
           lastReadDate: DateTime.tryParse(bookData['last_read_date']) ?? DateTime.now(),
           lastPageRead: bookData['last_page_read'],
           percentRead: bookData['percent_read'].toDouble(),

@@ -110,7 +110,6 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
 
     Widget buildBookImage(BuildContext context) {
       setImage();
-      print(authors);
       return Column(
         children: [
           Stack(
@@ -492,6 +491,8 @@ class _AddBookDetailsPageState extends State<AddBookDetailsPage> {
     if (thumbnailLink.isEmpty) {
       // Upload image to Firebase Storage and get the URL
       _imageUrl = await ImageHelper.uploadImageToFirebaseStorage(fbemail, fbpassword, _imageFile!);
+    } else {
+      _imageUrl = thumbnailLink;
     }
     print(_imageUrl);
 

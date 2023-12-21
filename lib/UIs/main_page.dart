@@ -67,7 +67,7 @@ class _MyMainPageState extends State<MyMainPage> {
         children: [
           HomePage(),
           // const BookPage(),
-          const BarcodeScannerPage(),
+          const MyLibraryPage(),
           const UserInfoPage(),
         ],
       ),
