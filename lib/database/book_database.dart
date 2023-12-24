@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
@@ -108,7 +109,7 @@ class DatabaseHelper {
       String bookId = bookData['book_id'];
       BookState bookState = BookState(
           bookId: bookData['book_id'],
-          buyDate: bookData['buy_date'] ?? '',
+          buyDate: bookData['buy_date'].toString().substring(0, 10) ?? '',
           lastReadDate: DateTime.tryParse(bookData['last_read_date']) ?? DateTime.now(),
           lastPageRead: bookData['last_page_read'],
           percentRead: bookData['percent_read'].toDouble(),

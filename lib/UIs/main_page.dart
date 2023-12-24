@@ -48,7 +48,7 @@ class _MyMainPageState extends State<MyMainPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Reading App"),
-        backgroundColor: Colors.blueAccent, // Set the app bar background color to black
+        backgroundColor: Colors.brown, // Set the app bar background color to black
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.logout),
@@ -71,46 +71,58 @@ class _MyMainPageState extends State<MyMainPage> {
           const UserInfoPage(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
-        // Set the background color of the navigation bar to black
-        selectedItemColor: Colors.lightBlue,
-        // Set the selected icon color to white
-        unselectedItemColor: Colors.black87,
-        // Set the unselected icon color to white
-        currentIndex: selectedTabIndex,
-        onTap: (index) {
-          setState(() {
-            selectedTabIndex = index;
-            pageController.animateToPage(
-              index,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.ease,
-            );
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'My Library',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb_outline),
-            label: 'Suggest',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: const Color(0xff404040), // Màu của thanh điều hướng
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: const Color(0xff404040), // Màu của thanh điều hướng
+          selectedItemColor: Colors.white, // Màu của mục được chọn
+          unselectedItemColor: Colors.grey,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: selectedTabIndex,
+          onTap: (index) {
+            setState(() {
+              selectedTabIndex = index;
+              pageController.animateToPage(
+                index,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.ease,
+              );
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book),
+              label: 'My Library',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.lightbulb_outline),
+              label: 'Suggest',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications),
+              label: 'Notifications',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Account',
+            ),
+          ],
+        ),
       ),
     );
   }

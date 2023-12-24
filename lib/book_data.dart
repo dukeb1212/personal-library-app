@@ -96,17 +96,17 @@ class Book {
 }
 
 class BookState {
-  final String bookId;
-  final String buyDate;
-  final DateTime lastReadDate;
-  final int lastPageRead;
-  final double percentRead;
-  final double totalReadHours;
-  final bool addToFavorites;
-  final String lastSeenPlace;
-  final int userId;
-  final List<String> quotation;
-  final List<String> comment;
+  String bookId;
+  String buyDate;
+  DateTime lastReadDate;
+  int lastPageRead;
+  double percentRead;
+  double totalReadHours;
+  bool addToFavorites;
+  String lastSeenPlace;
+  int userId;
+  List<String> quotation;
+  List<String> comment;
 
   BookState({
     required this.bookId,

@@ -121,15 +121,17 @@ Future<Book?> getBookByBarcode() async {
     print('Error: $e');
     return null; // or handle the error appropriately
   }
-  final result = await getBookByISBN(scannedBarcode);
+  if (scannedBarcode.isNotEmpty) {
+    final result = await getBookByISBN(scannedBarcode);
 
-  if (result['success']) {
-    final bookInfo = result['bookInfo'];
-    Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
-    return retrievedBook;
-  } else {
-    print('Error: ${result['message']}');
-    return null; // or handle the error appropriately
+    if (result['success']) {
+      final bookInfo = result['bookInfo'];
+      Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
+      return retrievedBook;
+    } else {
+      print('Error: ${result['message']}');
+      return null; // or handle the error appropriately
+    }
   }
 }
 

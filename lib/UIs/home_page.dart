@@ -4,6 +4,8 @@ import '../user_data.dart';
 import 'package:login_test/database/book_database.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'book.dart';
+
 class HomePage extends StatefulWidget {
 
   HomePage({super.key});
@@ -95,12 +97,23 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 10.0*fem,),
             SizedBox(
-              height: 340, // Adjust the height as needed
+              height: 340,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: recentlyReadBookStates.map((bookState) {
-                  // Build recently read book widgets
-                  return _buildRecentlyReadBook(bookState);
+                  return FutureBuilder<Widget>(
+                    // Assuming _buildRecentlyReadBookAsync is an asynchronous function
+                    future: _buildRecentlyReadBook(bookState),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        // If the Future is complete, return the widget
+                        return snapshot.data ?? SizedBox.shrink(); // Handle null case if needed
+                      } else {
+                        // If the Future is not complete, you can return a loading indicator or an empty container
+                        return CircularProgressIndicator(); // Replace with your loading indicator
+                      }
+                    },
+                  );
                 }).toList(),
               ),
             ),
@@ -115,23 +128,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 10*fem,),
-            SizedBox(
-              height: 340, // Adjust the height as needed
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: recentlyReadBookStates.map((bookState) {
-                  // Build recently read book widgets
-                  return _buildRecentlyReadBook(bookState);
-                }).toList(),
-              ),
-            ),
-          ],
+      ],
         ),
       ),
     );
   }
 
-  Widget _buildRecentlyReadBook(BookState bookState) {
+  Future<Widget> _buildRecentlyReadBook(BookState bookState) async {
     // You can use bookState.bookId to fetch corresponding Book object
     // using another method in DatabaseHelper
     // For simplicity, I'm using a placeholder Book here
@@ -156,7 +159,17 @@ class _HomePageState extends State<HomePage> {
 
     var bookCover = NetworkImage(foundBook.imageLinks['thumbnail']!);
 
+    final databaseHelper = DatabaseHelper();
+    final provider = container.read(userProvider);
+    final int? userId = provider.user?.userId;
+    final allBookStates = await databaseHelper.getAllBookStates(userId!);
+
+    BookState bs = allBookStates.where((bookState) => bookState.bookId == foundBook.id).first;
+
     return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => BookScreen(book: foundBook, bookState: bs)));
+      },
       child: Container(
         margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
         width: 150 * fem,

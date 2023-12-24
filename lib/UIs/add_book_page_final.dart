@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 import '../backend/google_books_api.dart';
@@ -15,6 +16,8 @@ import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
 import 'package:login_test/backend/image_helper.dart';
+
+import 'main_page.dart';
 
 String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
 String fbpassword = dotenv.env['FIREBASE_PASSWORD'] ?? '';
@@ -188,7 +191,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
               // Quay về trang MyLibraryScreen
-              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1)),
+              );
             },
           ),
         ),
@@ -694,13 +700,13 @@ class _AddBookScreenState extends State<AddBookScreen> {
             ],
           ),
           child: BottomNavigationBar(
-            items: const [
-              BottomNavigationBarItem(
+            items: [
+              const BottomNavigationBarItem(
                 icon: Icon(Icons.add),
                 label: 'Create new',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.scanner),
+                icon: Icon(MdiIcons.barcode),
                 label: 'Scan ISBN code',
               ),
             ],
@@ -718,6 +724,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
               });
               if (index == 1) {
                 Book? book = await getBookByBarcode();
+                setState(() {
+                  _currentIndex = 0;
+                });
                 if (book != null) {
                   setState(() {
                     widget.book = book;
