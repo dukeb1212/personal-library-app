@@ -70,188 +70,202 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
     double fem = MediaQuery.of(context).size.width / baseWidth;
 
 
-    return Stack(
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Enter title or author',
-                      ),
-                      onChanged: (query) {
-                        setState(() {
-                          currentQuery = query;
-                        });
-                      },
-                    ),
-                  ),
-                  // Search icon
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () {
-                        _updateBookList();
-                    },
-                  ),
-                  // Stack or List icon
-                  IconButton(
-                    icon: const Icon(Icons.filter_alt), // You can change the icon
-                    onPressed: () {
-                      _showDialog(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 15),
-            Expanded(
-              child: FutureBuilder<List<Book>>(
-                future: _getFilteredBooksFromDatabase(getAll),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('No books found.');
-                  } else {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        return Flex(
-                          direction: Axis.horizontal,
-                          children: [
-                            _buildBookButton(snapshot.data![index]),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 40 * fem, // Set the desired height
-              child: FutureBuilder<List<String>>(
-                future: _updateCategories(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('');
-                  } else {
-                    return ListView.builder(
-                      key: const PageStorageKey<String>('myListView'),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: snapshot.data?.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8 * fem),
-                          child: TextButton(
-                            onPressed: () {
-                              // Handle category button press
-                              setState(() {
-                                selectedCategoryIndex = index;
-                                selectedCategory = snapshot.data![index];
-                              });
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: selectedCategoryIndex == index
-                                  ? Colors.black
-                                  : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
-                            ),
-                            child: Text(
-                              snapshot.data![index],
-                              style: TextStyle(
-                                fontSize: 14*fem,
-                                fontWeight: selectedCategoryIndex == index
-                                    ? FontWeight.bold
-                                    : FontWeight.normal, // Make the selected category bold
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            ),
-            Expanded(
-              child: FutureBuilder<List<Book>>(
-                future: _getFilteredBooksFromDatabase(!getAll),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('No books found.');
-                  } else {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        return Flex(
-                          direction: Axis.horizontal,
-                          children: [
-                            _buildBookButton(snapshot.data![index]),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          bottom: 16.0,
-          right: 16.0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Row(
             children: [
-              FloatingActionButton(
-                heroTag: 'barcode scanner',
+              Expanded(
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Enter title or author',
+                  ),
+                  onChanged: (query) {
+                    setState(() {
+                      currentQuery = query;
+                    });
+                  },
+                ),
+              ),
+              // Search icon
+              IconButton(
+                icon: const Icon(Icons.search),
                 onPressed: () {
-                  // Book? book = await getBookByBarcode();
-                  // if (mounted) {
-                  //   if (book != null) {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => AddBookDetailsPage(book: book),
-                  //       ),
-                  //     );
-                  //   } else {
-                  //     ScaffoldMessenger.of(context).showSnackBar(
-                  //       const SnackBar(content: Text('Cannot find the book, please try another one!')),
-                  //     );
-                  //   }
-                  // }
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                      builder: (context) => AddBookScreen(book: Book.defaultBook()),
-                      ),
-                  );
+                  _updateBookList();
                 },
-                child: const Icon(Icons.add),
+              ),
+              // Stack or List icon
+              IconButton(
+                icon: const Icon(Icons.filter_alt), // You can change the icon
+                onPressed: () {
+                  _showDialog(context);
+                },
               ),
             ],
           ),
         ),
-      ],
+        backgroundColor: Colors.transparent, // Set the app bar background color to black
+      ),
+      body: Stack(
+        children: [ Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SingleChildScrollView(
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height, // Set a maximum height
+              ),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 15),
+                    Expanded(
+                      child: FutureBuilder<List<Book>>(
+                        future: _getFilteredBooksFromDatabase(getAll),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text('No book found!');
+                          } else {
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return Flex(
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    _buildBookButton(snapshot.data![index]),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 40 * fem, // Set the desired height
+                      child: FutureBuilder<List<String>>(
+                        future: _updateCategories(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text('');
+                          } else {
+                            return ListView.builder(
+                              key: const PageStorageKey<String>('myListView'),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data?.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8 * fem),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      // Handle category button press
+                                      setState(() {
+                                        selectedCategoryIndex = index;
+                                        selectedCategory = snapshot.data![index];
+                                      });
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: selectedCategoryIndex == index
+                                          ? Colors.black
+                                          : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
+                                    ),
+                                    child: Text(
+                                      snapshot.data![index],
+                                      style: TextStyle(
+                                        fontSize: 14*fem,
+                                        fontWeight: selectedCategoryIndex == index
+                                            ? FontWeight.bold
+                                            : FontWeight.normal, // Make the selected category bold
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: FutureBuilder<List<Book>>(
+                        future: _getFilteredBooksFromDatabase(!getAll),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text('No book found!');
+                          } else {
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return Flex(
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    _buildBookButton(snapshot.data![index]),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+            ),
+          ),
+        ),
+          Positioned(
+            bottom: 16.0,
+            right: 16.0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'barcode scanner',
+                  onPressed: () {
+                    // Book? book = await getBookByBarcode();
+                    // if (mounted) {
+                    //   if (book != null) {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => AddBookDetailsPage(book: book),
+                    //       ),
+                    //     );
+                    //   } else {
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //       const SnackBar(content: Text('Cannot find the book, please try another one!')),
+                    //     );
+                    //   }
+                    // }
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddBookScreen(book: Book.defaultBook()),
+                      ),
+                    );
+                  },
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -303,10 +317,18 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             .toList(); // Filter books based on both query and category
       }
     } else {
-      return allBooks;
+      if (currentQuery.isEmpty) {
+        return allBooks;
+      } else {
+        final String queryLowerCase = currentQuery.toLowerCase();
+        return allBooks
+            .where((book) =>
+        (book.title.toLowerCase().contains(queryLowerCase) ||
+            book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))))
+            .toList();
+      }
     }
   }
-
 
   String _truncateAuthorName(String authorName) {
     const maxLength = 7;

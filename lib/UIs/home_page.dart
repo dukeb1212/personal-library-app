@@ -107,10 +107,10 @@ class _HomePageState extends State<HomePage> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         // If the Future is complete, return the widget
-                        return snapshot.data ?? SizedBox.shrink(); // Handle null case if needed
+                        return snapshot.data ?? const SizedBox.shrink(); // Handle null case if needed
                       } else {
                         // If the Future is not complete, you can return a loading indicator or an empty container
-                        return CircularProgressIndicator(); // Replace with your loading indicator
+                        return const CircularProgressIndicator(); // Replace with your loading indicator
                       }
                     },
                   );
@@ -128,6 +128,27 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 10*fem,),
+            SizedBox(
+              height: 340,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: recentlyReadBookStates.map((bookState) {
+                  return FutureBuilder<Widget>(
+                    // Assuming _buildRecentlyReadBookAsync is an asynchronous function
+                    future: _buildRecentlyReadBook(bookState),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        // If the Future is complete, return the widget
+                        return snapshot.data ?? const SizedBox.shrink(); // Handle null case if needed
+                      } else {
+                        // If the Future is not complete, you can return a loading indicator or an empty container
+                        return const CircularProgressIndicator(); // Replace with your loading indicator
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
       ],
         ),
       ),
