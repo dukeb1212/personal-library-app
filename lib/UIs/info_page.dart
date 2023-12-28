@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:login_test/UIs/main_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../backend/google_books_api.dart';
+import '../book_data.dart';
 import '../user_data.dart';
 import 'change_password_form.dart';
 import 'package:login_test/backend/password_backend.dart';
@@ -28,6 +31,19 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final usernameController = TextEditingController(text: userInfo.username);
 
     final validate = Validate();
+
+    Future<void> logout() async {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.remove('token');
+      prefs.remove('username');
+      prefs.remove('email');
+      prefs.remove('name');
+      prefs.remove('age');
+      if (mounted)
+      {
+        Navigator.pushReplacementNamed(context, '/login');
+      } // This will navigate back to the previous screen, which is the login page
+    }
 
     void submit() async {
       final result = await validate.updateUserData(
@@ -89,6 +105,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 );
               },
               child: const Text('Đổi mật khẩu'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                logout();
+              },
+              child: const Text('Logout'),
             ),
           ],
         ),

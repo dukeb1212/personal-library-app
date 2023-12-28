@@ -137,11 +137,11 @@ Future<Book?> getBookByBarcode() async {
 
 Future<Map<String, dynamic>> getBookByCategory(String category) async {
   final List<Map<String,dynamic>> books = [];
+  String encodedCategory = category.replaceAll(' ', '').toLowerCase();
 
-  final encodedCategory = Uri.encodeComponent(category);
   final response = await http.get(
     Uri.parse(
-      'https://www.googleapis.com/books/v1/volumes?q=subject:$encodedCategory&maxResults=10&langRestrict=en+vn+fr&orderBy=newest&key=$apiKey',
+      'https://www.googleapis.com/books/v1/volumes?q=subject:$encodedCategory&langRestrict=en&filter=full&maxResults=20&orderBy=newest&key=$apiKey',
     ),
   );
   if (response.statusCode == 200) {
@@ -181,12 +181,12 @@ Future<Map<String, dynamic>> getBookByCategory(String category) async {
           } else { book['imageLinks'] = {'smallThumbnail': '', 'thumbnail': ''}; }
           // Add more fields as needed
           if (volumeInfo.containsKey('industryIdentifiers')) {
-            List<Map<String, dynamic>> industryIdentifiers = volumeInfo['industryIdentifiers'];
+            List<dynamic> industryIdentifiers = volumeInfo['industryIdentifiers'];
 
             String isbn13 = '';
 
             for (var identifier in industryIdentifiers) {
-              if (identifier.containsKey('type') && identifier.containsKey('identifier')) {
+              if (identifier is Map<String, dynamic> && identifier.containsKey('type') && identifier.containsKey('identifier')) {
                 String type = identifier['type'];
                 String identifierCode = identifier['identifier'];
 
@@ -221,5 +221,20 @@ Future<Map<String, dynamic>> getBookByCategory(String category) async {
     'success': true,
     'books': books,
   };
+}
+
+Future<List<Book>> getSuggestBook(String category) async {
+  List<Book> newBooks = [];
+  final result = await getBookByCategory(category);
+  if (result['success']) {
+    final booksInfo = result['books'];
+    for (final bookInfo in booksInfo) {
+      Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
+      newBooks.add(retrievedBook);
+    }
+  } else {
+    print('failed');
+  }
+  return newBooks;
 }
 

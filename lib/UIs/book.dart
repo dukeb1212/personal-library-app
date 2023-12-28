@@ -120,17 +120,22 @@ class _BookScreenState extends State<BookScreen> {
                   setState(() {
                     bookState.lastPageRead = int.tryParse(enteredPage)!;
                   });
+                  bookState.lastReadDate = DateTime.now();
+
                   final updateBookBackend = UpdateBookBackend();
                   final localDatabase = DatabaseHelper();
                   final provider = container.read(userProvider);
                   final UserData? user = provider.user;
 
-                  bookState.totalReadHours = elapsedTime.inSeconds/3600;
+                  bookState.totalReadHours += elapsedTime.inSeconds/3600;
 
                   await updateBookBackend.addBookToLibrary(bookState);
                   await localDatabase.syncBooksFromServer(user!.userId, user.username);
                   if (mounted) {
-                    Navigator.of(context).pop();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1)),
+                    );
                   }
                   setState(() {
                     isReading = false;

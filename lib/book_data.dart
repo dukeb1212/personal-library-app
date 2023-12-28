@@ -63,7 +63,7 @@ class Book {
 
   factory Book.fromGoogleBooksAPI(Map<String, dynamic> volumeInfo) {
     return Book(
-      id: volumeInfo['id'],
+      id: volumeInfo['id'] ?? generateUniqueId(),
       title: volumeInfo['title'] ?? 'Unknown',
       subtitle: volumeInfo['subtitle'] ?? '',
       authors: List<String>.from(volumeInfo['authors'] ?? ['Unknown']),
@@ -367,4 +367,14 @@ String generateRandomString(int length) {
   return String.fromCharCodes(
     List.generate(length, (index) => chars.codeUnitAt(random.nextInt(chars.length))),
   );
+}
+
+String truncateAuthorName(String authorName) {
+  const maxLength = 7;
+
+  if (authorName.length > maxLength) {
+    return '${authorName.substring(0, maxLength)}...';
+  } else {
+    return authorName;
+  }
 }

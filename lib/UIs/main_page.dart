@@ -23,18 +23,6 @@ class _MyMainPageState extends State<MyMainPage> {
     selectedTabIndex = widget.initialTabIndex;
     pageController = PageController(initialPage: selectedTabIndex);// Initialize it here
   }
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove('token');
-    prefs.remove('username');
-    prefs.remove('email');
-    prefs.remove('name');
-    prefs.remove('age');
-    if (mounted)
-    {
-      Navigator.pushReplacementNamed(context, '/login');
-    } // This will navigate back to the previous screen, which is the login page
-  }
 
   @override
   void dispose() {
@@ -46,17 +34,6 @@ class _MyMainPageState extends State<MyMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Reading App"),
-        backgroundColor: Colors.brown, // Set the app bar background color to black
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-            tooltip: "Logout",
-          )
-        ],
-      ),
       body: PageView(
         controller: pageController,
         onPageChanged: (index) {

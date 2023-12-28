@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -255,6 +256,43 @@ class DatabaseHelper {
       language: data['language'],
       imageLinks: Map<String, String>.from(jsonDecode(data['image_links'] ?? '{}')),
     );
+  }
+
+  Future<List<String>> getTopCategories(int numberOfCategories) async {
+    final databaseHelper = DatabaseHelper();
+    final List<Book> allBooks = await databaseHelper.getAllBooks();
+
+    // Count occurrences of each category
+    final Map<String, int> categoryCount = HashMap();
+
+    for (final book in allBooks) {
+      if (book.category != 'Unknown') {
+        categoryCount[book.category] = (categoryCount[book.category] ?? 0) + 1;
+      }
+    }
+
+    // Sort categories based on count in descending order
+    final sortedCategories = categoryCount.keys.toList()
+      ..sort((a, b) => categoryCount[b]!.compareTo(categoryCount[a]!));
+
+    // Take the top 10 categories
+    List<String> categories = sortedCategories.take(numberOfCategories).toList();
+    return categories;
+  }
+
+  Future<List<String>> getAllAuthors() async {
+    final List<Map<String, dynamic>> authorsData = await _db.query('authors');
+    return authorsData.map((map) => map['author_name'].toString()).toList();
+  }
+
+  Future<List<String>> getAllCategories() async {
+    final List<Map<String, dynamic>> result = await _db.rawQuery('SELECT DISTINCT category FROM books');
+    return result.map((map) => map['category'] as String).toList();
+  }
+
+  Future<List<String>> getAllLanguages() async {
+    final List<Map<String, dynamic>> result = await _db.rawQuery('SELECT DISTINCT language FROM books');
+    return result.map((map) => map['language'] as String).toList();
   }
 }
 

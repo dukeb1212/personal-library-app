@@ -198,6 +198,45 @@ class _AddBookScreenState extends State<AddBookScreen> {
             },
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: isTextFieldValid() ? () async {
+            final result = await addBook();
+
+            if (mounted) {
+              if (result['success']) {
+                Navigator.pop(context);
+                final databaseHelper = DatabaseHelper();
+                await databaseHelper.syncBooksFromServer(
+                    userData!.userId, userData.username);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Error'),
+                      content: Text(
+                          'Cannot add the book (${result['message']}). Please try again later!'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            }
+          } : () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Please enter all the necessary information with a valid value!')),
+            );
+          },
+          child: const Icon(Icons.save),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -653,38 +692,6 @@ class _AddBookScreenState extends State<AddBookScreen> {
               ),
               buildEditableTextField(
                   "Last seen place", lastSeenPlaceController),
-              ElevatedButton(
-                onPressed: isTextFieldValid() ? () async {
-                  final result = await addBook();
-
-                  if (mounted) {
-                    if (result['success']) {
-                      Navigator.pop(context);
-                      final databaseHelper = DatabaseHelper();
-                      await databaseHelper.syncBooksFromServer(userData!.userId, userData.username);
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Error'),
-                            content: Text('Cannot add the book (${result['message']}). Please try again later!'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  }
-                } : null,
-                child: const Text('Save'),
-              ),
             ],
           ),
         ),
@@ -745,7 +752,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
               }
             },
           ),
-        ));
+        )
+    );
   }
 
   Widget buildEditableTextField(String title, TextEditingController controller) {

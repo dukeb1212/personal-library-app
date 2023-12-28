@@ -6,16 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/UIs/book.dart';
-import 'package:login_test/backend/image_helper.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:intl/intl.dart';
-import 'package:login_test/backend/google_books_api.dart';
 import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
-import 'package:login_test/backend/update_book_backend.dart';
-import 'package:login_test/backend/firebase_auth_service.dart';
-import 'add_book_page.dart';
 
 String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
 String fbpassword = dotenv.env['FIREBASE_PASSWORD'] ?? '';
@@ -37,26 +30,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
   String selectedCategory = '';
   bool getAll = true;
   final databaseHelper = DatabaseHelper();
-
-
-  Future<List<String>> _updateCategories() async {
-    final List<Book> allBooks = await databaseHelper.getAllBooks();
-
-    // Count occurrences of each category
-    final Map<String, int> categoryCount = HashMap();
-
-    for (final book in allBooks) {
-        categoryCount[book.category] = (categoryCount[book.category] ?? 0) + 1;
-    }
-
-    // Sort categories based on count in descending order
-    final sortedCategories = categoryCount.keys.toList()
-      ..sort((a, b) => categoryCount[b]!.compareTo(categoryCount[a]!));
-
-    // Take the top 10 categories
-    List<String> categories = sortedCategories.take(10).toList();
-    return categories;
-  }
+  int totalBooks = 0;
 
   @override
   void initState() {
@@ -72,6 +46,8 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: null,
         title: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Row(
@@ -99,7 +75,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
               IconButton(
                 icon: const Icon(Icons.filter_alt), // You can change the icon
                 onPressed: () {
-                  _showDialog(context);
+                  _showFilterDialog(context);
                 },
               ),
             ],
@@ -107,18 +83,41 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
         ),
         backgroundColor: Colors.transparent, // Set the app bar background color to black
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddBookScreen(book: Book.defaultBook()),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Stack(
         children: [ Padding(
           padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
             child: Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height, // Set a maximum height
+                maxHeight: MediaQuery.of(context).size.height -20, // Set a maximum height
               ),
               child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 10),
+                    Text(
+                      '  All ($totalBooks books)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 24 * fem,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Expanded(
                       child: FutureBuilder<List<Book>>(
                         future: _getFilteredBooksFromDatabase(getAll),
@@ -146,11 +145,10 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
                         },
                       ),
                     ),
-                    const SizedBox(height: 10),
                     SizedBox(
-                      height: 40 * fem, // Set the desired height
+                      height: 60 * fem, // Set the desired height
                       child: FutureBuilder<List<String>>(
-                        future: _updateCategories(),
+                        future: updateCategories(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const CircularProgressIndicator();
@@ -182,7 +180,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
                                     child: Text(
                                       snapshot.data![index],
                                       style: TextStyle(
-                                        fontSize: 14*fem,
+                                        fontSize: 18 * fem,
                                         fontWeight: selectedCategoryIndex == index
                                             ? FontWeight.bold
                                             : FontWeight.normal, // Make the selected category bold
@@ -228,69 +226,131 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             ),
           ),
         ),
-          Positioned(
-            bottom: 16.0,
-            right: 16.0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FloatingActionButton(
-                  heroTag: 'barcode scanner',
-                  onPressed: () {
-                    // Book? book = await getBookByBarcode();
-                    // if (mounted) {
-                    //   if (book != null) {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (context) => AddBookDetailsPage(book: book),
-                    //       ),
-                    //     );
-                    //   } else {
-                    //     ScaffoldMessenger.of(context).showSnackBar(
-                    //       const SnackBar(content: Text('Cannot find the book, please try another one!')),
-                    //     );
-                    //   }
-                    // }
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddBookScreen(book: Book.defaultBook()),
-                      ),
-                    );
-                  },
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
   }
 
-  void _showDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Dialog Title'),
-          content: const Text('Dialog Content'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
+  void _showFilterDialog(BuildContext context) async {
+    final allAuthors = await databaseHelper.getAllAuthors();
+    final allCategories = await databaseHelper.getAllCategories();
+    final allLanguages = await databaseHelper.getAllLanguages();
+
+    String selectedCategory = allCategories.isNotEmpty ? allCategories[0] : '';
+    String selectedAuthor = allAuthors.isNotEmpty ? allAuthors[0] : '';
+    bool filterNewest = false;
+    String selectedLanguage = allLanguages.isNotEmpty ? allLanguages[0] : '';
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Filter Books'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButton<String>(
+                  hint: const Text('Select Category'),
+                  value: selectedCategory,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedCategory = newValue!;
+                    });
+                  },
+                  items: allCategories.map((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                DropdownButton<String>(
+                  hint: const Text('Select Author'),
+                  value: selectedAuthor,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedAuthor = newValue!;
+                    });
+                  },
+                  items: allAuthors.map((String author) {
+                    return DropdownMenuItem<String>(
+                      value: author,
+                      child: Text(author),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: filterNewest,
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          filterNewest = newValue!;
+                        });
+                      },
+                    ),
+                    const Text('Filter Newest Published Book'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                DropdownButton<String>(
+                  hint: const Text('Select Language'),
+                  value: selectedLanguage,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedLanguage = newValue!;
+                    });
+                  },
+                  items: allLanguages.map((String language) {
+                    return DropdownMenuItem<String>(
+                      value: language,
+                      child: Text(language),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
-          ],
-        );
-      },
-    );
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Apply filter logic here
+                  // You can use the selectedCategory, selectedAuthor, filterNewest, and selectedLanguage to filter your books
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Apply Filter'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+
+  Future<List<String>> updateCategories() async {
+    final result = await databaseHelper.getTopCategories(10);
+    if (selectedCategory.isEmpty) {
+      setState(() {
+        selectedCategory = result[0];
+      });
+    }
+    return result;
   }
 
   Future<void> _updateBookList() async {
-    setState(() {});
+    final List<Book> allBooks = await databaseHelper.getAllBooks();
+    setState(() {
+      totalBooks = allBooks.length;
+    });
   }
 
   Future<List<Book>> _getFilteredBooksFromDatabase(bool getAll) async {
@@ -327,16 +387,6 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))))
             .toList();
       }
-    }
-  }
-
-  String _truncateAuthorName(String authorName) {
-    const maxLength = 7;
-
-    if (authorName.length > maxLength) {
-      return '${authorName.substring(0, maxLength)}...';
-    } else {
-      return authorName;
     }
   }
 
@@ -383,7 +433,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             ),
             Text(
               book.authors.length > 1
-                  ? '${_truncateAuthorName(book.authors[0])}, ${_truncateAuthorName(book.authors[1])}'
+                  ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
                   : book.authors[0],
               style: TextStyle(
                 fontSize: 16 * fem,

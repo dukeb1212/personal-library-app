@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:login_test/UIs/add_book_page_final.dart';
+import '../backend/google_books_api.dart';
 import '../book_data.dart';
 import '../user_data.dart';
 import 'package:login_test/database/book_database.dart';
@@ -17,11 +19,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<BookState> recentlyReadBookStates = [];
   List<Book> recentlyReadBooks = [];
+  List<Book> suggestedBooks = [];
 
   @override
   void initState() {
     super.initState();
     _loadRecentlyReadBooks();
+    _loadSuggestedBooks();
   }
 
   Future<void> _loadRecentlyReadBooks() async {
@@ -46,6 +50,20 @@ class _HomePageState extends State<HomePage> {
         orElse: () => Book.defaultBook(),)).toList();
 
     setState(() {}); // Trigger a rebuild with the new data
+  }
+
+  Future<void> _loadSuggestedBooks() async {
+    final databaseHelper = DatabaseHelper();
+    final categories = await databaseHelper.getTopCategories(3);
+
+    for (final category in categories) {
+      final result = await getSuggestBook(category);
+      suggestedBooks += result;
+    }
+
+    if (mounted) {
+      setState(() {}); // Trigger a rebuild with the new data
+    }
   }
 
   @override
@@ -117,6 +135,7 @@ class _HomePageState extends State<HomePage> {
                 }).toList(),
               ),
             ),
+            SizedBox(height: 20 * fem,),
             Padding(
               padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
               child: Text(
@@ -132,10 +151,10 @@ class _HomePageState extends State<HomePage> {
               height: 340,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: recentlyReadBookStates.map((bookState) {
+                children: suggestedBooks.map((book) {
                   return FutureBuilder<Widget>(
                     // Assuming _buildRecentlyReadBookAsync is an asynchronous function
-                    future: _buildRecentlyReadBook(bookState),
+                    future: _buildSuggestedBook(book),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         // If the Future is complete, return the widget
@@ -149,6 +168,7 @@ class _HomePageState extends State<HomePage> {
                 }).toList(),
               ),
             ),
+            SizedBox(height: 20 *fem,),
       ],
         ),
       ),
@@ -169,15 +189,6 @@ class _HomePageState extends State<HomePage> {
 
     double fem = MediaQuery.of(context).size.width / 360;
 
-    Widget buildDefaultImage() {
-      return Image.asset(
-        'assets/default-book.png',
-        height: 500,
-        width: double.infinity,
-        fit: BoxFit.contain,
-      );
-    }
-
     var bookCover = NetworkImage(foundBook.imageLinks['thumbnail']!);
 
     final databaseHelper = DatabaseHelper();
@@ -189,7 +200,7 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => BookScreen(book: foundBook, bookState: bs)));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookScreen(book: foundBook, bookState: bs)));
       },
       child: Container(
         margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
@@ -224,6 +235,59 @@ class _HomePageState extends State<HomePage> {
               fontSize: 16 * fem,
               color: Colors.grey,
             ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<Widget> _buildSuggestedBook(Book book) async {
+    double fem = MediaQuery.of(context).size.width / 360;
+
+    var bookCover = NetworkImage(book.imageLinks['thumbnail']!);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddBookScreen(book: book)));
+      },
+      child: Container(
+        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+        width: 150 * fem,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 250 * fem,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12 * fem),
+                image: DecorationImage(
+                  image: bookCover,
+                  fit: BoxFit.cover,
+                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                ),
+              ),
+            ),
+            SizedBox(height: 10 * fem),
+            Text(
+              book.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16 * fem,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              book.authors.length > 1
+                  ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
+                  : book.authors[0],
+              style: TextStyle(
+                fontSize: 16 * fem,
+                color: Colors.grey,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
