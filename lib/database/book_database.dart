@@ -294,6 +294,30 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> result = await _db.rawQuery('SELECT DISTINCT language FROM books');
     return result.map((map) => map['language'] as String).toList();
   }
+
+  Future<List<String>> getAuthorsByCategoryFromDatabase(String category) async {
+    final List<Map<String, dynamic>> authorsData = await _db.rawQuery('''
+      SELECT DISTINCT authors.author_name
+      FROM authors
+      INNER JOIN write_book ON authors.author_id = write_book.author_id
+      INNER JOIN books ON write_book.book_id = books.book_id
+      WHERE books.category = ?
+    ''', [category]);
+
+    return authorsData.map((map) => map['author_name'].toString()).toList();
+  }
+
+  Future<List<String>> getCategoriesByAuthorFromDatabase(String author) async {
+    final List<Map<String, dynamic>> categoriesData = await _db.rawQuery('''
+      SELECT DISTINCT books.category
+      FROM books
+      INNER JOIN write_book ON books.book_id = write_book.book_id
+      INNER JOIN authors ON write_book.author_id = authors.author_id
+      WHERE authors.author_name = ?
+    ''', [author]);
+
+    return categoriesData.map((map) => map['category'].toString()).toList();
+  }
 }
 
 

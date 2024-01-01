@@ -1,22 +1,15 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:login_test/UIs/my_library_page.dart';
 import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:shelf_router/shelf_router.dart';
-
 import '../backend/google_books_api.dart';
 import '../backend/update_book_backend.dart';
 import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
 import 'package:login_test/backend/image_helper.dart';
-
 import 'main_page.dart';
 
 String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
@@ -108,7 +101,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     }
 
 
-    void _showImagePickerOptions() {
+    void showImagePickerOptions() {
       showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
@@ -165,7 +158,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
             ),
             child: FloatingActionButton(
               onPressed: () {
-                _showImagePickerOptions();
+                showImagePickerOptions();
               },
               backgroundColor: Colors.transparent,
               // splashColor: Colors.transparent,
@@ -204,7 +197,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
             if (mounted) {
               if (result['success']) {
-                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MyMainPage(initialTabIndex: 1),
+                  ),
+                );
                 final databaseHelper = DatabaseHelper();
                 await databaseHelper.syncBooksFromServer(
                     userData!.userId, userData.username);
@@ -258,16 +256,15 @@ class _AddBookScreenState extends State<AddBookScreen> {
                   const SizedBox(height: 8),
                   TextField(
                     onChanged: (_) {
-                      setState(() {
-                      });
+                      setState(() {});
                     },
                     controller: titleController,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: titleController.text.isEmpty
-                          ? Colors.red
-                          : Colors.grey,
+                              ? Colors.red
+                              : Colors.grey,
                         ),
                       ),
                       focusedBorder: const OutlineInputBorder(
@@ -350,7 +347,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
                       hintText: 'Enter Author and Press Plus Icon',
                       border: const OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: Colors.grey, // Set to transparent to remove the border
+                          color: Colors
+                              .grey, // Set to transparent to remove the border
                         ),
                       ),
                       focusedBorder: const OutlineInputBorder(
@@ -358,9 +356,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
                           color: Colors.black,
                         ),
                       ),
-                      errorText: authors.isEmpty
-                          ? 'Please add author(s)!'
-                          : null,
+                      errorText:
+                          authors.isEmpty ? 'Please add author(s)!' : null,
                     ),
                   ),
                 ],
@@ -487,54 +484,52 @@ class _AddBookScreenState extends State<AddBookScreen> {
               ),
               // Tiêu đề và trình chỉnh sửa cho Overview
               buildEditableTextField("Description", descriptionController),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Total Pages',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xff19191b),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: totalPagesController,
-            onChanged: (_) {
-              setState(() {
-              });
-            },
-            keyboardType: const TextInputType.numberWithOptions(decimal: false),
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: totalPagesController.text.isNotEmpty &&
-                      int.tryParse(totalPagesController.text) != null &&
-                      int.parse(totalPagesController.text) <= 0
-                      ? Colors.red
-                      : Colors
-                      .grey, // Set to transparent to remove the border
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Total Pages',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xff19191b),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: totalPagesController,
+                    onChanged: (_) {
+                      setState(() {});
+                    },
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: false),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: totalPagesController.text.isNotEmpty &&
+                                  int.tryParse(totalPagesController.text) !=
+                                      null &&
+                                  int.parse(totalPagesController.text) <= 0
+                              ? Colors.red
+                              : Colors
+                                  .grey, // Set to transparent to remove the border
+                        ),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      errorText: totalPagesController.text.isNotEmpty &&
+                              int.tryParse(totalPagesController.text) != null &&
+                              int.parse(totalPagesController.text) <= 0
+                          ? 'Please add a value greater than 0!'
+                          : null,
+                      hintText: 'Enter total pages',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              focusedBorder: const OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
-              ),
-              errorText: totalPagesController.text.isNotEmpty &&
-                  int.tryParse(totalPagesController.text) != null &&
-                  int.parse(totalPagesController.text) <= 0
-                  ? 'Please add a value greater than 0!'
-                  : null,
-              hintText: 'Enter total pages',
-            ),
-          ),
-
-
-
-          const SizedBox(height: 16),
-        ],
-      ),
               // Tiêu đề và trình chỉnh sửa cho Language
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -797,7 +792,6 @@ class _AddBookScreenState extends State<AddBookScreen> {
       _imageUrl = thumbnailLink;
       isEverImage = true;
     }
-    print(_imageUrl);
 
     final String bookId;
     if (widget.book!.id.isEmpty) {
@@ -817,7 +811,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
             subtitle: subtitleController.text,
             authors: authors,
             category: categoryController.text,
-            publishedDate: publishedDateController.text ?? 'unk',
+            publishedDate: publishedDateController.text,
             description: descriptionController.text,
             totalPages: int.parse(totalPagesController.text),
             language: selectedLanguageCode ?? 'unk',

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/UIs/book.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
@@ -32,6 +33,15 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
   final databaseHelper = DatabaseHelper();
   int totalBooks = 0;
 
+  String filteredCategory = '';
+  String filteredAuthor = '';
+  bool filterNewest = false;
+  String filteredLanguage = '';
+
+  ItemScrollController scrollController = ItemScrollController();
+  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  PageStorageBucket pageStorageBucket = PageStorageBucket();
+
   @override
   void initState() {
     super.initState();
@@ -43,7 +53,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
     double baseWidth = 360;
     double fem = MediaQuery.of(context).size.width / baseWidth;
 
-
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -157,38 +167,43 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
                           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                             return const Text('');
                           } else {
-                            return ListView.builder(
+                            return PageStorage(
                               key: const PageStorageKey<String>('myListView'),
-                              scrollDirection: Axis.horizontal,
-                              itemCount: snapshot.data?.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8 * fem),
-                                  child: TextButton(
-                                    onPressed: () {
-                                      // Handle category button press
-                                      setState(() {
-                                        selectedCategoryIndex = index;
-                                        selectedCategory = snapshot.data![index];
-                                      });
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: selectedCategoryIndex == index
-                                          ? Colors.black
-                                          : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
-                                    ),
-                                    child: Text(
-                                      snapshot.data![index],
-                                      style: TextStyle(
-                                        fontSize: 18 * fem,
-                                        fontWeight: selectedCategoryIndex == index
-                                            ? FontWeight.bold
-                                            : FontWeight.normal, // Make the selected category bold
+                              bucket: pageStorageBucket,
+                              child: ScrollablePositionedList.builder(
+                                itemPositionsListener: itemPositionsListener,
+                                itemScrollController: scrollController,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 8 * fem),
+                                    child: TextButton(
+                                      onPressed: () {
+                                        // Handle category button press
+                                        setState(() {
+                                          selectedCategoryIndex = index;
+                                          selectedCategory = snapshot.data![index];
+                                        });
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: selectedCategoryIndex == index
+                                            ? Colors.black
+                                            : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
+                                      ),
+                                      child: Text(
+                                        snapshot.data![index],
+                                        style: TextStyle(
+                                          fontSize: 18 * fem,
+                                          fontWeight: selectedCategoryIndex == index
+                                              ? FontWeight.bold
+                                              : FontWeight.normal, // Make the selected category bold
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             );
                           }
                         },
@@ -236,99 +251,58 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
     final allCategories = await databaseHelper.getAllCategories();
     final allLanguages = await databaseHelper.getAllLanguages();
 
-    String selectedCategory = allCategories.isNotEmpty ? allCategories[0] : '';
-    String selectedAuthor = allAuthors.isNotEmpty ? allAuthors[0] : '';
-    bool filterNewest = false;
-    String selectedLanguage = allLanguages.isNotEmpty ? allLanguages[0] : '';
-
     if (mounted) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Filter Books'),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DropdownButton<String>(
-                  hint: const Text('Select Category'),
-                  value: selectedCategory,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedCategory = newValue!;
-                    });
-                  },
-                  items: allCategories.map((String category) {
-                    return DropdownMenuItem<String>(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                DropdownButton<String>(
-                  hint: const Text('Select Author'),
-                  value: selectedAuthor,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedAuthor = newValue!;
-                    });
-                  },
-                  items: allAuthors.map((String author) {
-                    return DropdownMenuItem<String>(
-                      value: author,
-                      child: Text(author),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: filterNewest,
-                      onChanged: (bool? newValue) {
-                        setState(() {
-                          filterNewest = newValue!;
-                        });
-                      },
-                    ),
-                    const Text('Filter Newest Published Book'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                DropdownButton<String>(
-                  hint: const Text('Select Language'),
-                  value: selectedLanguage,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedLanguage = newValue!;
-                    });
-                  },
-                  items: allLanguages.map((String language) {
-                    return DropdownMenuItem<String>(
-                      value: language,
-                      child: Text(language),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  // Apply filter logic here
-                  // You can use the selectedCategory, selectedAuthor, filterNewest, and selectedLanguage to filter your books
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Apply Filter'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-            ],
+          return FilterDialog(
+            allAuthors: allAuthors,
+            allCategories: allCategories,
+            allLanguages: allLanguages,
+            filteredAuthor: filteredAuthor,
+            filteredCategory: filteredCategory,
+            filterNewest: filterNewest,
+            onApplyFilter: (category, author, newest, language) {
+              if (category == 'All' && author == 'All') {
+                setState(() {
+                  filteredCategory = '';
+                  selectedCategory = '';
+                  currentQuery = '';
+                  filteredAuthor = '';
+                  filterNewest = newest;
+                  filteredLanguage = language;
+                });
+              } else if (author == 'All' && category != 'All') {
+                setState(() {
+                  filteredCategory = category;
+                  selectedCategory = category;
+                  currentQuery = '';
+                  filteredAuthor = '';
+                  filterNewest = newest;
+                  filteredLanguage = language;
+                });
+              } else if (category == 'All' && author != 'All') {
+                  setState(() {
+                    selectedCategory = '';
+                    filteredCategory = '';
+                    currentQuery = author;
+                    filteredAuthor = author;
+                    filterNewest = newest;
+                    filteredLanguage = language;
+                  });
+              } else {
+                setState(() {
+                  filteredCategory = category;
+                  selectedCategory = category;
+                  currentQuery = author;
+                  filteredAuthor = author;
+                  filterNewest = newest;
+                  filteredLanguage = language;
+                });
+              }
+              // Apply your filter logic here
+              _updateBookList();
+            },
           );
         },
       );
@@ -338,12 +312,28 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
 
   Future<List<String>> updateCategories() async {
     final result = await databaseHelper.getTopCategories(10);
-    if (selectedCategory.isEmpty) {
-      setState(() {
-        selectedCategory = result[0];
+    if (result.isNotEmpty) {
+      if (selectedCategory.isEmpty) {
+        setState(() {
+          selectedCategory = result[0];
+        });
+      } else {
+        if (result.contains(selectedCategory)) {
+          selectedCategoryIndex = result.indexOf(selectedCategory);
+        } else {
+          result.add(selectedCategory);
+          selectedCategoryIndex = result.indexOf(selectedCategory);
+        }
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if(scrollController.isAttached) {
+          scrollController.jumpTo(index: selectedCategoryIndex);
+        }
       });
+      return result;
+    } else {
+      return ['No category.'];
     }
-    return result;
   }
 
   Future<void> _updateBookList() async {
@@ -381,11 +371,17 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
         return allBooks;
       } else {
         final String queryLowerCase = currentQuery.toLowerCase();
-        return allBooks
+        final bookList = allBooks
             .where((book) =>
         (book.title.toLowerCase().contains(queryLowerCase) ||
             book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))))
             .toList();
+        if (totalBooks != bookList.length) {
+          setState(() {
+            totalBooks = bookList.length;
+          });
+        }
+        return bookList;
       }
     }
   }
@@ -445,6 +441,315 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
           ],
         ),
       ),
+    );
+  }
+}
+
+class FilterDialog extends StatefulWidget {
+  final List<String> allAuthors;
+  final List<String> allCategories;
+  final List<String> allLanguages;
+  final String filteredAuthor;
+  final String filteredCategory;
+  final bool filterNewest;
+  final Function(String, String, bool, String) onApplyFilter;
+
+  const FilterDialog({super.key,
+    required this.allAuthors,
+    required this.allCategories,
+    required this.allLanguages,
+    required this.filteredAuthor,
+    required this.filteredCategory,
+    required this.filterNewest,
+    required this.onApplyFilter,
+  });
+
+  @override
+  _FilterDialogState createState() => _FilterDialogState();
+}
+
+class _FilterDialogState extends State<FilterDialog> {
+  String selectedCategory = '';
+  String selectedAuthor = '';
+  bool filterNewest = false;
+  String selectedLanguage = '';
+  List<String> allAuthors = [];
+  List<String> allCategories = [];
+  List<String> allLanguages = [];
+  List<String> availableAuthors = [];
+  List<String> availableCategories = [];
+  final databaseHelper = DatabaseHelper();
+  final categoryController = TextEditingController();
+  final authorController = TextEditingController();
+  final languageController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    allAuthors = ['All'] + widget.allAuthors;
+    allCategories = ['All'] + widget.allCategories;
+    allLanguages = ['All'] + widget.allLanguages;
+    availableAuthors = allAuthors;
+    availableCategories = allCategories;
+    if (widget.filteredAuthor.isEmpty) {
+      authorController.text = allAuthors[0];
+    } else {
+      authorController.text = widget.filteredAuthor;
+    }
+    if (widget.filteredCategory.isEmpty) {
+      categoryController.text = allCategories[0];
+    } else {
+      categoryController.text = widget.filteredCategory;
+    }
+    languageController.text = allLanguages[0];
+  }
+
+  void updateAvailableAuthors() async {
+    if (categoryController.text == 'All') {
+      availableAuthors = allAuthors;
+    } else {
+      availableAuthors = await databaseHelper.getAuthorsByCategoryFromDatabase(categoryController.text);
+    }
+    if (availableAuthors.contains(authorController.text)) {
+      availableAuthors = allAuthors;
+      return;
+    }
+    setState(() {
+      authorController.text = availableAuthors[0];
+      selectedAuthor = availableAuthors[0];
+    });
+  }
+
+  void updateAvailableCategories() async {
+    if (authorController.text == 'All') {
+      availableCategories = allCategories;
+    } else {
+      availableCategories = await databaseHelper.getCategoriesByAuthorFromDatabase(authorController.text);
+    }
+    if (availableCategories.contains(categoryController.text)) {
+      availableCategories = allCategories;
+      return;
+    }
+    setState(() {
+      categoryController.text = availableCategories[0];
+      selectedCategory = availableCategories[0];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double fem = MediaQuery.of(context).size.width / 360;
+    return AlertDialog(
+      title: const Text(
+        'Filter Books',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: Color(0xff19191b),
+        ),
+      ),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width - 50 * fem,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Text(
+              'Category',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff19191b),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: DropdownMenu<String>(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xff19191b),
+                ),
+                controller: categoryController,
+                menuHeight: 300,
+                width: MediaQuery.of(context).size.width - 110 * fem,
+                requestFocusOnTap: true,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                onSelected: (String? value) {
+                  setState(() {
+                    categoryController.text = value!;
+                    selectedCategory = value;
+                    updateAvailableAuthors();
+                  });
+                },
+                dropdownMenuEntries: availableCategories
+                    .map((category) => DropdownMenuEntry<String>(
+                  value: category,
+                  label: category.toString(),
+                ))
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Author',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff19191b),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: DropdownMenu<String>(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xff19191b),
+                ),
+                controller: authorController,
+                menuHeight: 300,
+                width: MediaQuery.of(context).size.width - 110 * fem,
+                requestFocusOnTap: true,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                onSelected: (String? value) {
+                  setState(() {
+                    authorController.text = value!;
+                    selectedAuthor = value;
+                    updateAvailableCategories();
+                  });
+                },
+                dropdownMenuEntries: availableAuthors
+                    .map((author) => DropdownMenuEntry<String>(
+                  value: author,
+                  label: author.toString(),
+                )).toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                  value: filterNewest,
+                  onChanged: (bool? newValue) {
+                    setState(() {
+                      filterNewest = newValue!;
+                    });
+                  },
+                ),
+                const Text('Filter Newest Published Book'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Language',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff19191b),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: DropdownMenu<String>(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xff19191b),
+                ),
+                controller: languageController,
+                menuHeight: 300,
+                width: MediaQuery.of(context).size.width - 110 * fem,
+                requestFocusOnTap: true,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                onSelected: (String? value) {
+                  setState(() {
+                    languageController.text = value!;
+                    selectedLanguage = value;
+                  });
+                },
+                dropdownMenuEntries: allLanguages
+                    .map((language) => DropdownMenuEntry<String>(
+                  value: language,
+                  label: language.toString(),
+                )).toList(),
+              ),
+            ),
+            SizedBox(height: 16 * fem,),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    categoryController.text = allCategories[0];
+                    authorController.text = allAuthors[0];
+                    languageController.text = allLanguages[0];
+                    selectedCategory = allCategories[0];
+                    selectedAuthor = allAuthors[0];
+                    selectedLanguage = allLanguages[0];
+                    filterNewest = false;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: const Color(0xffffffff),
+                  backgroundColor: const Color(0xff946f58),
+                ),
+                child: const Text('Reset Filter'),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            widget.onApplyFilter(
+              selectedCategory,
+              selectedAuthor,
+              filterNewest,
+              selectedLanguage,
+            );
+            Navigator.of(context).pop();
+          },
+          style: ElevatedButton.styleFrom(
+            foregroundColor: const Color(0xffffffff),
+            backgroundColor: const Color(0xff946f58),
+          ),
+          child: const Text('Apply Filter'),
+        ),
+      ],
     );
   }
 }
