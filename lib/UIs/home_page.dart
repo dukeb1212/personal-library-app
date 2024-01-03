@@ -54,8 +54,12 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadSuggestedBooks() async {
     final databaseHelper = DatabaseHelper();
-    final categories = await databaseHelper.getTopCategories(3);
+    var categories = await databaseHelper.getTopCategories(3);
+    final List<Book> allBooks = await databaseHelper.getAllBooks();
 
+    if(categories.isEmpty) {
+      categories = getRandomValues(bookCategories);
+    }
     for (final category in categories) {
       final result = await getSuggestBook(category);
       suggestedBooks += result;

@@ -368,6 +368,11 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
       }
     } else {
       if (currentQuery.isEmpty) {
+        if (totalBooks != allBooks.length) {
+          setState(() {
+            totalBooks = allBooks.length;
+          });
+        }
         return allBooks;
       } else {
         final String queryLowerCase = currentQuery.toLowerCase();
@@ -550,180 +555,182 @@ class _FilterDialogState extends State<FilterDialog> {
       ),
       content: SizedBox(
         width: MediaQuery.of(context).size.width - 50 * fem,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const Text(
-              'Category',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff19191b),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: DropdownMenu<String>(
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Text(
+                'Category',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                   color: Color(0xff19191b),
                 ),
-                controller: categoryController,
-                menuHeight: 300,
-                width: MediaQuery.of(context).size.width - 110 * fem,
-                requestFocusOnTap: true,
-                inputDecorationTheme: const InputDecorationTheme(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.black,
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: DropdownMenu<String>(
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff19191b),
+                  ),
+                  controller: categoryController,
+                  menuHeight: 300,
+                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  requestFocusOnTap: true,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
                     ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-                onSelected: (String? value) {
-                  setState(() {
-                    categoryController.text = value!;
-                    selectedCategory = value;
-                    updateAvailableAuthors();
-                  });
-                },
-                dropdownMenuEntries: availableCategories
-                    .map((category) => DropdownMenuEntry<String>(
-                  value: category,
-                  label: category.toString(),
-                ))
-                    .toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Author',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff19191b),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: DropdownMenu<String>(
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff19191b),
-                ),
-                controller: authorController,
-                menuHeight: 300,
-                width: MediaQuery.of(context).size.width - 110 * fem,
-                requestFocusOnTap: true,
-                inputDecorationTheme: const InputDecorationTheme(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.black,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-                onSelected: (String? value) {
-                  setState(() {
-                    authorController.text = value!;
-                    selectedAuthor = value;
-                    updateAvailableCategories();
-                  });
-                },
-                dropdownMenuEntries: availableAuthors
-                    .map((author) => DropdownMenuEntry<String>(
-                  value: author,
-                  label: author.toString(),
-                )).toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Checkbox(
-                  value: filterNewest,
-                  onChanged: (bool? newValue) {
+                  onSelected: (String? value) {
                     setState(() {
-                      filterNewest = newValue!;
+                      categoryController.text = value!;
+                      selectedCategory = value;
+                      updateAvailableAuthors();
                     });
                   },
+                  dropdownMenuEntries: availableCategories
+                      .map((category) => DropdownMenuEntry<String>(
+                    value: category,
+                    label: category.toString(),
+                  ))
+                      .toList(),
                 ),
-                const Text('Filter Newest Published Book'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Language',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff19191b),
               ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: DropdownMenu<String>(
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+              const SizedBox(height: 16),
+              const Text(
+                'Author',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                   color: Color(0xff19191b),
                 ),
-                controller: languageController,
-                menuHeight: 300,
-                width: MediaQuery.of(context).size.width - 110 * fem,
-                requestFocusOnTap: true,
-                inputDecorationTheme: const InputDecorationTheme(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.black,
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: DropdownMenu<String>(
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff19191b),
+                  ),
+                  controller: authorController,
+                  menuHeight: 300,
+                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  requestFocusOnTap: true,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
                     ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
+                  onSelected: (String? value) {
+                    setState(() {
+                      authorController.text = value!;
+                      selectedAuthor = value;
+                      updateAvailableCategories();
+                    });
+                  },
+                  dropdownMenuEntries: availableAuthors
+                      .map((author) => DropdownMenuEntry<String>(
+                    value: author,
+                    label: author.toString(),
+                  )).toList(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Checkbox(
+                    value: filterNewest,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        filterNewest = newValue!;
+                      });
+                    },
                   ),
-                ),
-                onSelected: (String? value) {
-                  setState(() {
-                    languageController.text = value!;
-                    selectedLanguage = value;
-                  });
-                },
-                dropdownMenuEntries: allLanguages
-                    .map((language) => DropdownMenuEntry<String>(
-                  value: language,
-                  label: language.toString(),
-                )).toList(),
+                  const Text('Filter Newest Published Book'),
+                ],
               ),
-            ),
-            SizedBox(height: 16 * fem,),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    categoryController.text = allCategories[0];
-                    authorController.text = allAuthors[0];
-                    languageController.text = allLanguages[0];
-                    selectedCategory = allCategories[0];
-                    selectedAuthor = allAuthors[0];
-                    selectedLanguage = allLanguages[0];
-                    filterNewest = false;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: const Color(0xffffffff),
-                  backgroundColor: const Color(0xff946f58),
+              const SizedBox(height: 16),
+              const Text(
+                'Language',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff19191b),
                 ),
-                child: const Text('Reset Filter'),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Center(
+                child: DropdownMenu<String>(
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff19191b),
+                  ),
+                  controller: languageController,
+                  menuHeight: 300,
+                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  requestFocusOnTap: true,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  onSelected: (String? value) {
+                    setState(() {
+                      languageController.text = value!;
+                      selectedLanguage = value;
+                    });
+                  },
+                  dropdownMenuEntries: allLanguages
+                      .map((language) => DropdownMenuEntry<String>(
+                    value: language,
+                    label: language.toString(),
+                  )).toList(),
+                ),
+              ),
+              SizedBox(height: 16 * fem,),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      categoryController.text = allCategories[0];
+                      authorController.text = allAuthors[0];
+                      languageController.text = allLanguages[0];
+                      selectedCategory = allCategories[0];
+                      selectedAuthor = allAuthors[0];
+                      selectedLanguage = allLanguages[0];
+                      filterNewest = false;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: const Color(0xffffffff),
+                    backgroundColor: const Color(0xff946f58),
+                  ),
+                  child: const Text('Reset Filter'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

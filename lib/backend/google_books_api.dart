@@ -138,21 +138,13 @@ Future<Book?> getBookByBarcode() async {
 Future<Map<String, dynamic>> getBookByCategory(String category) async {
   final List<Map<String,dynamic>> books = [];
   late http.Response response;
-  if(category.isNotEmpty) {
-    String encodedCategory = category.replaceAll(' ', '').toLowerCase();
+  String encodedCategory = category.replaceAll(' ', '').toLowerCase();
 
-    response = await http.get(
-      Uri.parse(
-        'https://www.googleapis.com/books/v1/volumes?q=subject:$encodedCategory&langRestrict=en&filter=full&maxResults=20&orderBy=newest&key=$apiKey',
-      ),
-    );
-  } else {
-    response = await http.get(
-      Uri.parse(
-        'https://www.googleapis.com/books/v1/volumes?q=subject:filter=full&maxResults=20&orderBy=newest&key=$apiKey',
-      ),
-    );
-  }
+  response = await http.get(
+    Uri.parse(
+      'https://www.googleapis.com/books/v1/volumes?q=subject:$encodedCategory&orderBy=newest&langRestrict=en&filter=full&maxResults=20&key=$apiKey',
+    ),
+  );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
 

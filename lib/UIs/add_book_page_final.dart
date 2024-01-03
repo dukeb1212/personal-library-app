@@ -157,6 +157,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
               image: bookCover,
             ),
             child: FloatingActionButton(
+              heroTag: 'imageTag',
               onPressed: () {
                 showImagePickerOptions();
               },
@@ -192,6 +193,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'save',
           onPressed: isTextFieldValid() ? () async {
             final result = await addBook();
 

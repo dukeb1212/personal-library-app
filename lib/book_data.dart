@@ -378,3 +378,23 @@ String truncateAuthorName(String authorName) {
     return authorName;
   }
 }
+
+List<String> getRandomValues(List<String> inputList) {
+  Random random = Random();
+  List<String> randomValues = [];
+
+  // Make sure the input list has at least 3 elements
+  if (inputList.length < 3) {
+    throw ArgumentError("Input list must have at least 3 elements");
+  }
+
+  // Shuffle the input list to get a random order
+  inputList.shuffle(random);
+
+  // Add the first 3 elements to the result list
+  for (int i = 0; i < 3; i++) {
+    randomValues.add(inputList[i]);
+  }
+
+  return randomValues;
+}

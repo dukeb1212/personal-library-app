@@ -73,8 +73,6 @@ class _BookScreenState extends State<BookScreen> {
     if (readingTimer != null && readingTimer!.isActive) {
       readingTimer!.cancel();
     }
-
-    print(elapsedTime.inSeconds);
     // Add your alert dialog here
     showDialog(
       barrierDismissible: false,
