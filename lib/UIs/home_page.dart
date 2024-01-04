@@ -83,6 +83,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 20*fem,),
             Container(
               padding: const EdgeInsets.all(16.0),
               child: RichText(
@@ -97,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold, // Make the username bold
-                        color: Colors.blue, // Change the color to stand out
+                        color: Color(0xff404040), // Change the color to stand out
                       ),
                     ),
                     const TextSpan(
@@ -107,39 +108,45 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
-              child: Text(
-                'Recently',
-                style: TextStyle(
-                  fontSize: 25 * fem,
-                  fontWeight: FontWeight.bold,
-                ),
+            if (recentlyReadBooks.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
+                    child: Text(
+                      'Recently',
+                      style: TextStyle(
+                        fontSize: 25 * fem,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0*fem,),
+                  SizedBox(
+                    height: 340,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: recentlyReadBookStates.map((bookState) {
+                        return FutureBuilder<Widget>(
+                          // Assuming _buildRecentlyReadBookAsync is an asynchronous function
+                          future: _buildRecentlyReadBook(bookState),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.done) {
+                              // If the Future is complete, return the widget
+                              return snapshot.data ?? const SizedBox.shrink(); // Handle null case if needed
+                            } else {
+                              // If the Future is not complete, you can return a loading indicator or an empty container
+                              return const CircularProgressIndicator(); // Replace with your loading indicator
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 20 * fem,),
+                ],
               ),
-            ),
-            SizedBox(height: 10.0*fem,),
-            SizedBox(
-              height: 340,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: recentlyReadBookStates.map((bookState) {
-                  return FutureBuilder<Widget>(
-                    // Assuming _buildRecentlyReadBookAsync is an asynchronous function
-                    future: _buildRecentlyReadBook(bookState),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        // If the Future is complete, return the widget
-                        return snapshot.data ?? const SizedBox.shrink(); // Handle null case if needed
-                      } else {
-                        // If the Future is not complete, you can return a loading indicator or an empty container
-                        return const CircularProgressIndicator(); // Replace with your loading indicator
-                      }
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
-            SizedBox(height: 20 * fem,),
             Padding(
               padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
               child: Text(

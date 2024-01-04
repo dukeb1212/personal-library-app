@@ -87,10 +87,6 @@ class _MyMainPageState extends State<MyMainPage> {
               label: 'My Library',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.lightbulb_outline),
-              label: 'Suggest',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.notifications),
               label: 'Notifications',
             ),

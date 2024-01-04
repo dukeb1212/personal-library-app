@@ -104,5 +104,17 @@ class UpdateBookBackend {
     }
   }
 
+  Future<String> deleteBookState(String bookId, int userId) async {
+    final Map<String, dynamic> requestBody = {'bookId': bookId, 'userId': userId};
+    final response = await http.delete(Uri.parse('$_baseUrl/deleteBookState'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody));
 
+    if (response.statusCode == 200) {
+      return 'Book deleted successfully';
+    } else {
+      print('Failed to delete BookState. Status code: ${response.statusCode}');
+      return 'Failed to delete book, please try again later.';
+    }
+  }
 }

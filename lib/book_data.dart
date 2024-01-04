@@ -398,3 +398,85 @@ List<String> getRandomValues(List<String> inputList) {
 
   return randomValues;
 }
+
+final List<String> sortByOptions = [
+  'Latest Buy',
+  'Published Date (Newest)',
+  'Percent Read (highest to lowest)',
+  'Percent Read (lowest to highest)',
+  'Total Hours Highest',
+  'Total Hours Lowest',
+];
+
+List<Book> sortByOption(List<Book> bookList, List<BookState> bookState, int index) {
+  switch (index){
+    case 0:
+      bookState.sort((a,b) => DateTime.parse(b.buyDate).compareTo(DateTime.parse(a.buyDate)));
+      bookList.sort((a,b) {
+        int index1 = bookState.indexWhere((state) => state.bookId == a.id);
+        int index2 = bookState.indexWhere((state) => state.bookId == b.id);
+        return index1.compareTo(index2);
+      });
+      return bookList;
+    case 1:
+      bookList.sort((a,b) => parseDateString(b.publishedDate).compareTo(parseDateString(a.publishedDate)));
+      return bookList;
+    case 2:
+      bookState.sort((a,b) => b.percentRead.compareTo(a.percentRead));
+      bookList.sort((a,b) {
+        int index1 = bookState.indexWhere((state) => state.bookId == a.id);
+        int index2 = bookState.indexWhere((state) => state.bookId == b.id);
+        return index1.compareTo(index2);
+      });
+      return bookList;
+    case 3:
+      bookState.sort((a,b) => a.percentRead.compareTo(b.percentRead));
+      bookList.sort((a,b) {
+        int index1 = bookState.indexWhere((state) => state.bookId == a.id);
+        int index2 = bookState.indexWhere((state) => state.bookId == b.id);
+        return index1.compareTo(index2);
+      });
+      return bookList;
+    case 4:
+      bookState.sort((a,b) => b.totalReadHours.compareTo(a.totalReadHours));
+      bookList.sort((a,b) {
+        int index1 = bookState.indexWhere((state) => state.bookId == a.id);
+        int index2 = bookState.indexWhere((state) => state.bookId == b.id);
+        return index1.compareTo(index2);
+      });
+      return bookList;
+    case 5:
+      bookState.sort((a,b) => a.percentRead.compareTo(b.percentRead));
+      bookList.sort((a,b) {
+        int index1 = bookState.indexWhere((state) => state.bookId == a.id);
+        int index2 = bookState.indexWhere((state) => state.bookId == b.id);
+        return index1.compareTo(index2);
+      });
+      return bookList;
+    default:
+      return bookList;
+  }
+}
+
+DateTime parseDateString(String dateString) {
+  List<String> dateParts = dateString.split('-');
+
+  if (dateParts.length == 1) {
+    // If there is only one part, it's a year
+    return DateTime(int.parse(dateParts[0]));
+  } else if (dateParts.length == 3) {
+    // If there are three parts, it's in the format year-month-day
+    return DateTime(
+      int.parse(dateParts[0]),
+      int.parse(dateParts[1]),
+      int.parse(dateParts[2]),
+    );
+  } else if (dateParts.length == 2) {
+    return DateTime(
+      int.parse(dateParts[0]),
+      int.parse(dateParts[1]),
+    );
+  } else {
+    throw const FormatException("Invalid date format");
+  }
+}

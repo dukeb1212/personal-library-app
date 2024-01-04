@@ -35,12 +35,13 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
 
   String filteredCategory = '';
   String filteredAuthor = '';
-  bool filterNewest = false;
-  String filteredLanguage = '';
+  String sortBy = '';
+  String filteredLanguage = 'All';
 
   ItemScrollController scrollController = ItemScrollController();
   ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   PageStorageBucket pageStorageBucket = PageStorageBucket();
+  ScrollController pageScrollController = ScrollController();
 
   @override
   void initState() {
@@ -65,25 +66,36 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
               Expanded(
                 child: TextField(
                   decoration: const InputDecoration(
+                    hintStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xff404040),
+                    ),
                     hintText: 'Enter title or author',
+                    border: InputBorder.none,
                   ),
                   onChanged: (query) {
                     setState(() {
                       currentQuery = query;
                     });
                   },
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xff404040),
+                ),
                 ),
               ),
               // Search icon
               IconButton(
-                icon: const Icon(Icons.search),
+                icon: const Icon(Icons.search, color: Color(0xff404040),),
                 onPressed: () {
                   _updateBookList();
                 },
               ),
               // Stack or List icon
               IconButton(
-                icon: const Icon(Icons.filter_alt), // You can change the icon
+                icon: const Icon(Icons.filter_alt, color: Color(0xff404040)), // You can change the icon
                 onPressed: () {
                   _showFilterDialog(context);
                 },
@@ -91,7 +103,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             ],
           ),
         ),
-        backgroundColor: Colors.transparent, // Set the app bar background color to black
+        backgroundColor: const Color(0xffffffff), // Set the app bar background color to black
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -102,6 +114,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             ),
           );
         },
+        backgroundColor: Color(0xff404040).withOpacity(0.8),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -109,6 +122,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
         children: [ Padding(
           padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
+            controller: pageScrollController,
             child: Container(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height -20, // Set a maximum height
@@ -261,15 +275,15 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             allLanguages: allLanguages,
             filteredAuthor: filteredAuthor,
             filteredCategory: filteredCategory,
-            filterNewest: filterNewest,
-            onApplyFilter: (category, author, newest, language) {
+            filteredLanguage: filteredLanguage,
+            sortOption: sortBy,
+            onApplyFilter: (category, author, sort, language) {
               if (category == 'All' && author == 'All') {
                 setState(() {
                   filteredCategory = '';
                   selectedCategory = '';
                   currentQuery = '';
                   filteredAuthor = '';
-                  filterNewest = newest;
                   filteredLanguage = language;
                 });
               } else if (author == 'All' && category != 'All') {
@@ -278,30 +292,27 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
                   selectedCategory = category;
                   currentQuery = '';
                   filteredAuthor = '';
-                  filterNewest = newest;
                   filteredLanguage = language;
                 });
-              } else if (category == 'All' && author != 'All') {
-                  setState(() {
-                    selectedCategory = '';
-                    filteredCategory = '';
-                    currentQuery = author;
-                    filteredAuthor = author;
-                    filterNewest = newest;
-                    filteredLanguage = language;
-                  });
               } else {
                 setState(() {
                   filteredCategory = category;
                   selectedCategory = category;
                   currentQuery = author;
                   filteredAuthor = author;
-                  filterNewest = newest;
                   filteredLanguage = language;
                 });
               }
+              sortBy = sort;
               // Apply your filter logic here
               _updateBookList();
+              if (filteredCategory == category) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  pageScrollController.jumpTo(pageScrollController.position.maxScrollExtent);
+                });
+              } else {
+                pageScrollController.jumpTo(pageScrollController.position.minScrollExtent);
+              }
             },
           );
         },
@@ -347,19 +358,30 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
     final List<Book> allBooks = await databaseHelper.getAllBooks();
     final provider = container.read(userProvider);
     final int? userId = provider.user?.userId;
+    List<Book> result = allBooks;
     allBookStates = await databaseHelper.getAllBookStates(userId!);
 
     // Filter books based on the search query and selected category
+    if (sortBy.isNotEmpty) {
+      final List<BookState> resultState = allBookStates.where(
+              (bookState) => result.any((book) => bookState.bookId == book.id)
+      ).toList();
+      result = sortByOption(result, resultState, sortByOptions.indexWhere((option) => sortBy == option));
+    }
+    if (filteredLanguage != 'All') {
+      result = result
+          .where((book) => book.language == filteredLanguage).toList();
+    }
     if (!getAll) {
       if (currentQuery.isEmpty && selectedCategory.isEmpty) {
-        return allBooks; // Return all books if both query and category are empty
+        result = result; // Return all books if both query and category are empty
       } else if (currentQuery.isEmpty) {
-        return allBooks
+        result = result
             .where((book) => book.category == selectedCategory)
-            .toList(); // Filter books based on the selected category
+            .toList();
       } else {
         final String queryLowerCase = currentQuery.toLowerCase();
-        return allBooks
+        result = result
             .where((book) =>
         (book.title.toLowerCase().contains(queryLowerCase) ||
             book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))) &&
@@ -368,27 +390,26 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
       }
     } else {
       if (currentQuery.isEmpty) {
-        if (totalBooks != allBooks.length) {
+        if (totalBooks != result.length) {
           setState(() {
-            totalBooks = allBooks.length;
+            totalBooks = result.length;
           });
         }
-        return allBooks;
       } else {
         final String queryLowerCase = currentQuery.toLowerCase();
-        final bookList = allBooks
+        result = result
             .where((book) =>
         (book.title.toLowerCase().contains(queryLowerCase) ||
             book.authors.any((author) => author.toLowerCase().contains(queryLowerCase))))
             .toList();
-        if (totalBooks != bookList.length) {
+        if (totalBooks != result.length) {
           setState(() {
-            totalBooks = bookList.length;
+            totalBooks = result.length;
           });
         }
-        return bookList;
       }
     }
+    return result;
   }
 
   Widget _buildBookButton(Book book) {
@@ -456,8 +477,9 @@ class FilterDialog extends StatefulWidget {
   final List<String> allLanguages;
   final String filteredAuthor;
   final String filteredCategory;
-  final bool filterNewest;
-  final Function(String, String, bool, String) onApplyFilter;
+  final String filteredLanguage;
+  final String sortOption;
+  final Function(String, String, String, String) onApplyFilter;
 
   const FilterDialog({super.key,
     required this.allAuthors,
@@ -465,7 +487,8 @@ class FilterDialog extends StatefulWidget {
     required this.allLanguages,
     required this.filteredAuthor,
     required this.filteredCategory,
-    required this.filterNewest,
+    required this.filteredLanguage,
+    required this.sortOption,
     required this.onApplyFilter,
   });
 
@@ -477,15 +500,15 @@ class _FilterDialogState extends State<FilterDialog> {
   String selectedCategory = '';
   String selectedAuthor = '';
   bool filterNewest = false;
-  String selectedLanguage = '';
+  String selectedLanguage = 'All';
   List<String> allAuthors = [];
   List<String> allCategories = [];
   List<String> allLanguages = [];
   List<String> availableAuthors = [];
-  List<String> availableCategories = [];
   final databaseHelper = DatabaseHelper();
   final categoryController = TextEditingController();
   final authorController = TextEditingController();
+  final sortController = TextEditingController();
   final languageController = TextEditingController();
 
   @override
@@ -495,7 +518,6 @@ class _FilterDialogState extends State<FilterDialog> {
     allCategories = ['All'] + widget.allCategories;
     allLanguages = ['All'] + widget.allLanguages;
     availableAuthors = allAuthors;
-    availableCategories = allCategories;
     if (widget.filteredAuthor.isEmpty) {
       authorController.text = allAuthors[0];
     } else {
@@ -506,38 +528,19 @@ class _FilterDialogState extends State<FilterDialog> {
     } else {
       categoryController.text = widget.filteredCategory;
     }
-    languageController.text = allLanguages[0];
+    languageController.text = widget.filteredLanguage;
+    sortController.text = widget.sortOption;
   }
 
   void updateAvailableAuthors() async {
     if (categoryController.text == 'All') {
       availableAuthors = allAuthors;
     } else {
-      availableAuthors = await databaseHelper.getAuthorsByCategoryFromDatabase(categoryController.text);
-    }
-    if (availableAuthors.contains(authorController.text)) {
-      availableAuthors = allAuthors;
-      return;
+      availableAuthors = ['All'] + await databaseHelper.getAuthorsByCategoryFromDatabase(categoryController.text);
     }
     setState(() {
       authorController.text = availableAuthors[0];
       selectedAuthor = availableAuthors[0];
-    });
-  }
-
-  void updateAvailableCategories() async {
-    if (authorController.text == 'All') {
-      availableCategories = allCategories;
-    } else {
-      availableCategories = await databaseHelper.getCategoriesByAuthorFromDatabase(authorController.text);
-    }
-    if (availableCategories.contains(categoryController.text)) {
-      availableCategories = allCategories;
-      return;
-    }
-    setState(() {
-      categoryController.text = availableCategories[0];
-      selectedCategory = availableCategories[0];
     });
   }
 
@@ -571,6 +574,7 @@ class _FilterDialogState extends State<FilterDialog> {
               const SizedBox(height: 8),
               Center(
                 child: DropdownMenu<String>(
+                  enableFilter: categoryController.text != 'All',
                   textStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -597,7 +601,7 @@ class _FilterDialogState extends State<FilterDialog> {
                       updateAvailableAuthors();
                     });
                   },
-                  dropdownMenuEntries: availableCategories
+                  dropdownMenuEntries: allCategories
                       .map((category) => DropdownMenuEntry<String>(
                     value: category,
                     label: category.toString(),
@@ -617,6 +621,7 @@ class _FilterDialogState extends State<FilterDialog> {
               const SizedBox(height: 8),
               Center(
                 child: DropdownMenu<String>(
+                  enableFilter: authorController.text != 'All',
                   textStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -640,7 +645,6 @@ class _FilterDialogState extends State<FilterDialog> {
                     setState(() {
                       authorController.text = value!;
                       selectedAuthor = value;
-                      updateAvailableCategories();
                     });
                   },
                   dropdownMenuEntries: availableAuthors
@@ -651,18 +655,47 @@ class _FilterDialogState extends State<FilterDialog> {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: filterNewest,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        filterNewest = newValue!;
-                      });
-                    },
+              const Text(
+                'Sort By',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff19191b),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: DropdownMenu<String>(
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff19191b),
                   ),
-                  const Text('Filter Newest Published Book'),
-                ],
+                  controller: sortController,
+                  menuHeight: 300,
+                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  requestFocusOnTap: false,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  onSelected: (String? value) {
+                    setState(() {
+                      sortController.text = value!;
+                    });
+                  },
+                  dropdownMenuEntries: sortByOptions
+                      .map((type) => DropdownMenuEntry<String>(
+                    value: type,
+                    label: type.toString(),
+                  )).toList(),
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -719,12 +752,12 @@ class _FilterDialogState extends State<FilterDialog> {
                       selectedCategory = allCategories[0];
                       selectedAuthor = allAuthors[0];
                       selectedLanguage = allLanguages[0];
-                      filterNewest = false;
+                      sortController.clear();
                     });
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: const Color(0xffffffff),
-                    backgroundColor: const Color(0xff946f58),
+                    backgroundColor: const Color(0xff404040),
                   ),
                   child: const Text('Reset Filter'),
                 ),
@@ -745,15 +778,11 @@ class _FilterDialogState extends State<FilterDialog> {
             widget.onApplyFilter(
               selectedCategory,
               selectedAuthor,
-              filterNewest,
+              sortController.text,
               selectedLanguage,
             );
             Navigator.of(context).pop();
           },
-          style: ElevatedButton.styleFrom(
-            foregroundColor: const Color(0xffffffff),
-            backgroundColor: const Color(0xff946f58),
-          ),
           child: const Text('Apply Filter'),
         ),
       ],

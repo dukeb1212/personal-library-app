@@ -173,6 +173,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: const Color(0xff404040),
           actions: [
             IconButton(
               icon: const Icon(Icons.upload),
@@ -193,6 +194,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xff404040).withOpacity(0.8),
           heroTag: 'save',
           onPressed: isTextFieldValid() ? () async {
             final result = await addBook();

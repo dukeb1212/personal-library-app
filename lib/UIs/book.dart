@@ -28,6 +28,8 @@ class _BookScreenState extends State<BookScreen> {
   Timer? readingTimer;
   TextEditingController pageController = TextEditingController();
   BookState bookState = BookState.initial();
+  final updateBookBackend = UpdateBookBackend();
+  final localDatabase = DatabaseHelper();
 
   @override
   void initState() {
@@ -107,7 +109,11 @@ class _BookScreenState extends State<BookScreen> {
                 });
                 startReadingTimer();
               },
-              child: const Text('Continue Reading'),
+              child: const Text(
+                'Continue Reading',
+                style: TextStyle(color: Color(0xff404040)),
+              ),
+
             ),
             TextButton(
               onPressed: () async {
@@ -145,7 +151,11 @@ class _BookScreenState extends State<BookScreen> {
                   );
                 }
               },
-              child: const Text('End Reading'),
+              child: const Text(
+                'End Reading',
+                style: TextStyle(color: Color(0xff404040)
+              ),
+              ),
             ),
           ],
         );
@@ -199,15 +209,15 @@ class _BookScreenState extends State<BookScreen> {
   Widget build(BuildContext context) {
     double baseWidth = 360;
     double fem = MediaQuery.of(context).size.width / baseWidth;
-    final updateBookBackend = UpdateBookBackend();
-    final localDatabase = DatabaseHelper();
     final provider = container.read(userProvider);
     final UserData? user = provider.user;
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xffffffff),
+        shadowColor: const Color(0xffffffff),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back,color: Color(0xff404040),),
           onPressed: () {
 
             // Quay về trang MyLibraryScreen
@@ -223,9 +233,40 @@ class _BookScreenState extends State<BookScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // Xử lý khi người dùng nhấn nút chia sẻ
+            icon: const Icon(Icons.delete_rounded, color: Color(0xff404040),),
+            onPressed: () async {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Do you want to delete this book?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          localDatabase.deleteBookAndAuthor(bookState.bookId);
+                          final result = await updateBookBackend.deleteBookState(bookState.bookId, bookState.userId);
+                          if (mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1)),
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(result)),
+                            );
+                          }
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                }
+              );
             },
           ),
         ],
@@ -453,7 +494,8 @@ class _BookScreenState extends State<BookScreen> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Cancel'),
+                              child: const Text('Cancel', style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                             TextButton(
                               onPressed: () async {
@@ -466,7 +508,8 @@ class _BookScreenState extends State<BookScreen> {
                                   Navigator.of(context).pop();
                                 }
                               },
-                              child: const Text('Save'),
+                              child: const Text('Save', style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                           ],
                         );
@@ -556,7 +599,8 @@ class _BookScreenState extends State<BookScreen> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Cancel'),
+                              child: const Text('Cancel',style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                             TextButton(
                               onPressed: () async{
@@ -579,7 +623,8 @@ class _BookScreenState extends State<BookScreen> {
                                   Navigator.of(context).pop();
                                 }
                               },
-                              child: const Text('Save'),
+                              child: const Text('Save', style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                           ],
                         );
@@ -654,7 +699,8 @@ class _BookScreenState extends State<BookScreen> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Cancel'),
+                              child: const Text('Cancel',style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                             TextButton(
                               onPressed: () async {
@@ -674,7 +720,8 @@ class _BookScreenState extends State<BookScreen> {
                                   Navigator.of(context).pop();
                                 }
                               },
-                              child: const Text('Save'),
+                              child: const Text('Save', style: TextStyle(color: Color(0xff404040)),
+                              ),
                             ),
                           ],
                         );

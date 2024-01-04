@@ -318,6 +318,39 @@ class DatabaseHelper {
 
     return categoriesData.map((map) => map['category'].toString()).toList();
   }
+
+  Future<void> deleteBookAndAuthor(String bookId) async {
+    await _db.transaction((txn) async {
+      // Get the author IDs associated with the book
+      List<int> authorIds = await txn.query(
+        'write_book',
+        columns: ['author_id'],
+        where: 'book_id = ?',
+        whereArgs: [bookId],
+      ).then((List<Map<String, dynamic>> results) {
+        return results.map<int>((row) => row['author_id'] as int).toList();
+      });
+
+      // Delete book from the 'books' table
+      await txn.delete('books', where: 'book_id = ?', whereArgs: [bookId]);
+
+      // Delete associated author entries from 'write_book' table
+      await txn.delete('write_book', where: 'book_id = ?', whereArgs: [bookId]);
+
+      // Delete authors if no more books associated with them
+      for (int authorId in authorIds) {
+        int bookCount = Sqflite.firstIntValue(await txn.rawQuery(
+          'SELECT COUNT(*) FROM write_book WHERE author_id = ?',
+          [authorId],
+        )) ?? 0;
+
+        if (bookCount == 0) {
+          // No more books associated with this author, delete from 'authors' table
+          await txn.delete('authors', where: 'author_id = ?', whereArgs: [authorId]);
+        }
+      }
+    });
+  }
 }
 
 
