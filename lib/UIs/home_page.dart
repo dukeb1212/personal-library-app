@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(16.0),
               child: RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontSize: 18, color: Colors.black), // Default style for the entire text
+                  style: const TextStyle(fontSize: 20, color: Colors.black), // Default style for the entire text
                   children: [
                     const TextSpan(
                       text: 'Welcome ',
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                     TextSpan(
                       text: userName,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold, // Make the username bold
                         color: Color(0xff404040), // Change the color to stand out
                       ),

@@ -118,144 +118,175 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: Stack(
-        children: [ Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            controller: pageScrollController,
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height -20, // Set a maximum height
+      body: SingleChildScrollView(
+        controller: pageScrollController,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                '  All ($totalBooks books)',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 24 * fem,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      '  All ($totalBooks books)',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 24 * fem,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: FutureBuilder<List<Book>>(
-                        future: _getFilteredBooksFromDatabase(getAll),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Text('No book found!');
-                          } else {
-                            return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-                                return Flex(
-                                  direction: Axis.horizontal,
-                                  children: [
-                                    _buildBookButton(snapshot.data![index]),
-                                  ],
-                                );
-                              },
-                            );
-                          }
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 340,
+                child: FutureBuilder<List<Book>>(
+                  future: _getFilteredBooksFromDatabase(getAll),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('No book found!');
+                    } else {
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Flex(
+                            direction: Axis.horizontal,
+                            children: [
+                              _buildBookButton(snapshot.data![index]),
+                            ],
+                          );
                         },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 60 * fem, // Set the desired height
-                      child: FutureBuilder<List<String>>(
-                        future: updateCategories(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Text('');
-                          } else {
-                            return PageStorage(
-                              key: const PageStorageKey<String>('myListView'),
-                              bucket: pageStorageBucket,
-                              child: ScrollablePositionedList.builder(
-                                itemPositionsListener: itemPositionsListener,
-                                itemScrollController: scrollController,
-                                scrollDirection: Axis.horizontal,
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8 * fem),
-                                    child: TextButton(
-                                      onPressed: () {
-                                        // Handle category button press
-                                        setState(() {
-                                          selectedCategoryIndex = index;
-                                          selectedCategory = snapshot.data![index];
-                                        });
-                                      },
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: selectedCategoryIndex == index
-                                            ? Colors.black
-                                            : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
-                                      ),
-                                      child: Text(
-                                        snapshot.data![index],
-                                        style: TextStyle(
-                                          fontSize: 18 * fem,
-                                          fontWeight: selectedCategoryIndex == index
-                                              ? FontWeight.bold
-                                              : FontWeight.normal, // Make the selected category bold
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                      );
+                    }
+                  },
+                ),
+              ),
+              SizedBox(
+                height: 60 * fem, // Set the desired height
+                child: FutureBuilder<List<String>>(
+                  future: updateCategories(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('');
+                    } else {
+                      return PageStorage(
+                        key: const PageStorageKey<String>('myListView'),
+                        bucket: pageStorageBucket,
+                        child: ScrollablePositionedList.builder(
+                          itemPositionsListener: itemPositionsListener,
+                          itemScrollController: scrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8 * fem),
+                              child: TextButton(
+                                onPressed: () {
+                                  // Handle category button press
+                                  setState(() {
+                                    selectedCategoryIndex = index;
+                                    selectedCategory = snapshot.data![index];
+                                  });
                                 },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: selectedCategoryIndex == index
+                                      ? Colors.black
+                                      : Colors.grey, backgroundColor: Colors.transparent, // Set background color to transparent
+                                ),
+                                child: Text(
+                                  snapshot.data![index],
+                                  style: TextStyle(
+                                    fontSize: 22 * fem,
+                                    fontWeight: selectedCategoryIndex == index
+                                        ? FontWeight.bold
+                                        : FontWeight.normal, // Make the selected category bold
+                                  ),
+                                ),
                               ),
                             );
-                          }
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: FutureBuilder<List<Book>>(
-                        future: _getFilteredBooksFromDatabase(!getAll),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Text('No book found!');
-                          } else {
-                            return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-                                return Flex(
-                                  direction: Axis.horizontal,
-                                  children: [
-                                    _buildBookButton(snapshot.data![index]),
-                                  ],
-                                );
-                              },
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
+                          },
+                        ),
+                      );
+                    }
+                  },
                 ),
-            ),
+              ),
+              SizedBox(
+                height: 340,
+                child: FutureBuilder<List<Book>>(
+                  future: _getFilteredBooksFromDatabase(!getAll),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('No book found!');
+                    } else {
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Flex(
+                            direction: Axis.horizontal,
+                            children: [
+                              _buildBookButton(snapshot.data![index]),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 20,),
+              Text(
+                '  Favorites List',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 24 * fem,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10,),
+              SizedBox(
+                height: 340,
+                child: FutureBuilder<List<Book>>(
+                  future: _getFilteredBooksFromDatabase(getAll, getFavor: true),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('No book found!');
+                    } else {
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Flex(
+                            direction: Axis.horizontal,
+                            children: [
+                              _buildBookButton(snapshot.data![index]),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 20,),
+            ],
           ),
-        ),
-        ],
       ),
     );
   }
@@ -308,7 +339,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
               _updateBookList();
               if (filteredCategory == category) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  pageScrollController.jumpTo(pageScrollController.position.maxScrollExtent);
+                  pageScrollController.jumpTo(pageScrollController.position.maxScrollExtent/2);
                 });
               } else {
                 pageScrollController.jumpTo(pageScrollController.position.minScrollExtent);
@@ -349,12 +380,14 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
 
   Future<void> _updateBookList() async {
     final List<Book> allBooks = await databaseHelper.getAllBooks();
-    setState(() {
-      totalBooks = allBooks.length;
-    });
+    if (mounted) {
+      setState(() {
+        totalBooks = allBooks.length;
+      });
+    }
   }
 
-  Future<List<Book>> _getFilteredBooksFromDatabase(bool getAll) async {
+  Future<List<Book>> _getFilteredBooksFromDatabase(bool getAll, {bool? getFavor}) async {
     final List<Book> allBooks = await databaseHelper.getAllBooks();
     final provider = container.read(userProvider);
     final int? userId = provider.user?.userId;
@@ -407,6 +440,10 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             totalBooks = result.length;
           });
         }
+      }
+      if (getFavor != null) {
+        final resultState = allBookStates.where((bookState) => bookState.addToFavorites).toList();
+        result = result.where((book) => resultState.any((bookState) => book.id == bookState.bookId)).toList();
       }
     }
     return result;

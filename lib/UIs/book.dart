@@ -7,6 +7,7 @@ import 'dart:async';
 
 import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../user_data.dart';
 import 'main_page.dart';
@@ -133,13 +134,20 @@ class _BookScreenState extends State<BookScreen> {
 
                   bookState.totalReadHours += elapsedTime.inSeconds/3600;
 
-                  await updateBookBackend.addBookToLibrary(bookState);
+                  final result = await updateBookBackend.addBookToLibrary(bookState);
                   await localDatabase.syncBooksFromServer(user!.userId, user.username);
                   if (mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1)),
-                    );
+                    if (result['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1)),
+                      );
+                    } else {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result['message'])),
+                      );
+                    }
                   }
                   setState(() {
                     isReading = false;
@@ -219,7 +227,6 @@ class _BookScreenState extends State<BookScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,color: Color(0xff404040),),
           onPressed: () {
-
             // Quay về trang MyLibraryScreen
             if (!isReading) {
               Navigator.pushReplacement(
@@ -276,18 +283,77 @@ class _BookScreenState extends State<BookScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: SizedBox(
-                width: 150 * fem,
-                height: 220 * fem,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20 * fem),
-                  child: Image.network(
-                    widget.book!.imageLinks['thumbnail']!,
-                    fit: BoxFit.cover,
+            Stack(
+              children: [
+                Center(
+                  child: SizedBox(
+                    width: 150 * fem,
+                    height: 220 * fem,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20 * fem),
+                      child: Image.network(
+                        widget.book!.imageLinks['thumbnail']!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                Positioned(
+                  top: - 12.0,
+                  right: -5.5,
+                  child: IconButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: bookState.addToFavorites
+                                  ? const Text('Remove from favorites list?')
+                                  : const Text('Add to favorites list?'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Cancel')
+                                ),
+                                TextButton(
+                                    onPressed: () async {
+                                      bookState.addToFavorites = !bookState.addToFavorites;
+
+                                      final updateBookBackend = UpdateBookBackend();
+                                      final result = await updateBookBackend.addBookToLibrary(bookState);
+
+                                      if (mounted) {
+                                        if (result['success']) {
+                                          final String action = bookState.addToFavorites ? 'add to' : 'remove from';
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(content: Text('Successfully $action favorites list!')));
+                                          setState(() {});
+                                          await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                        } else {
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(content: Text(result['message'])));
+                                        }
+                                      }
+                                    },
+                                    child: const Text('Yes')
+                                ),
+                              ],
+                            );
+                          }
+                      );
+                    },
+                    icon: Icon(
+                      bookState.addToFavorites ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      size: 35,
+                      color: bookState.addToFavorites ? Colors.redAccent : const Color(0xff404040),
+                    ),
+                  ),
+                )
+              ],
             ),
             SizedBox(height: 10 * fem),
             Center(
