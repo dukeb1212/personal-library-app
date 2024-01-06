@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'info_page.dart';
 import 'my_library_page.dart';
@@ -9,10 +8,10 @@ class MyMainPage extends StatefulWidget {
   const MyMainPage({Key? key, this.initialTabIndex = 0}) : super(key: key);
 
   @override
-  _MyMainPageState createState() => _MyMainPageState();
+  MyMainPageState createState() => MyMainPageState();
 }
 
-class _MyMainPageState extends State<MyMainPage> {
+class MyMainPageState extends State<MyMainPage> {
   late int selectedTabIndex;
   PageController pageController = PageController(
       initialPage: 0); // Initialize PageController
@@ -41,11 +40,11 @@ class _MyMainPageState extends State<MyMainPage> {
             selectedTabIndex = index;
           });
         },
-        children: [
+        children: const [
           HomePage(),
           // const BookPage(),
-          const MyLibraryPage(),
-          const UserInfoPage(),
+          MyLibraryPage(),
+          UserInfoPage(),
         ],
       ),
       bottomNavigationBar: Container(

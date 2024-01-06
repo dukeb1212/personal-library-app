@@ -21,10 +21,10 @@ class AddBookScreen extends StatefulWidget {
   AddBookScreen({Key? key, required this.book}) : super(key: key);
 
   @override
-  _AddBookScreenState createState() => _AddBookScreenState();
+  AddBookScreenState createState() => AddBookScreenState();
 }
 
-class _AddBookScreenState extends State<AddBookScreen> {
+class AddBookScreenState extends State<AddBookScreen> {
   int _currentIndex = 0;
 
   TextEditingController titleController = TextEditingController();

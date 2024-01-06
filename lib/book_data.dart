@@ -55,8 +55,8 @@ class Book {
       totalPages: map['totalPages'],
       language: map['language'],
       imageLinks: {
-        'smallThumbnail': map['imageLinks']['smallThumbnail'].toString() ?? '',
-        'thumbnail': map['imageLinks']['thumbnail'].toString() ?? '',
+        'smallThumbnail': map['imageLinks']['smallThumbnail'].toString(),
+        'thumbnail': map['imageLinks']['thumbnail'].toString(),
       },
     );
   }
@@ -73,8 +73,8 @@ class Book {
       totalPages: volumeInfo['pageCount'] ?? 1,
       language: volumeInfo['language'] ?? 'en',
       imageLinks: {
-        'smallThumbnail': volumeInfo['imageLinks']['smallThumbnail'].toString() ?? '',
-        'thumbnail': volumeInfo['imageLinks']['thumbnail'].toString() ?? '',
+        'smallThumbnail': volumeInfo['imageLinks']['smallThumbnail'].toString(),
+        'thumbnail': volumeInfo['imageLinks']['thumbnail'].toString(),
       },
     );
   }

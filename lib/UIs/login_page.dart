@@ -12,10 +12,10 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   final _authBackend = AuthBackend();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -34,27 +34,29 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // Navigate to the next page (or perform other actions based on login success)
-    if (token != null && mounted) {
-      final userData = await _authBackend.fetchUserData(username);
-      setSharedPrefs(userData);
-      final provider = container.read(userProvider);
-      provider.setUser(userData);
+    if (mounted) {
+      if (token != null) {
+        final userData = await _authBackend.fetchUserData(username);
+        setSharedPrefs(userData);
+        final provider = container.read(userProvider);
+        provider.setUser(userData);
 
-      final databaseHelper = DatabaseHelper();
-      await databaseHelper.syncBooksFromServer(userData.userId, username);
+        final databaseHelper = DatabaseHelper();
+        await databaseHelper.syncBooksFromServer(userData.userId, username);
 
-      if(mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MyMainPage()),
+        if(mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MyMainPage()),
+          );
+        }
+        // Navigate to the desired page after successful login
+      } else {
+        // Show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login failed. Try again.')),
         );
       }
-      // Navigate to the desired page after successful login
-    } else {
-      // Show an error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed. Try again.')),
-      );
     }
   }
 

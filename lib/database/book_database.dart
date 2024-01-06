@@ -1,12 +1,10 @@
 import 'dart:collection';
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
-import '../backend/google_books_api.dart';
 import '../book_data.dart';
 
 class DatabaseHelper {
@@ -110,7 +108,7 @@ class DatabaseHelper {
       String bookId = bookData['book_id'];
       BookState bookState = BookState(
           bookId: bookData['book_id'],
-          buyDate: bookData['buy_date'].toString().substring(0, 10) ?? '',
+          buyDate: bookData['buy_date'].toString().substring(0, 10),
           lastReadDate: DateTime.tryParse(bookData['last_read_date']) ?? DateTime.now(),
           lastPageRead: bookData['last_page_read'],
           percentRead: bookData['percent_read'].toDouble(),
@@ -213,7 +211,9 @@ class DatabaseHelper {
       await databaseHelper.syncBooks(books, userId);
     } else {
       // Handle error
-      print('Failed to fetch books from the server');
+      if (kDebugMode) {
+        print('Failed to fetch books from the server');
+      }
     }
   }
 

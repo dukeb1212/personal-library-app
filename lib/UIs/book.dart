@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:login_test/UIs/my_library_page.dart';
 import 'package:login_test/backend/update_book_backend.dart';
 import 'dart:async';
-
 import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-
 import '../user_data.dart';
 import 'main_page.dart';
 
@@ -19,10 +15,10 @@ class BookScreen extends StatefulWidget {
   const BookScreen({Key? key, required this.book, required this.bookState}) : super(key: key);
 
   @override
-  _BookScreenState createState() => _BookScreenState();
+  BookScreenState createState() => BookScreenState();
 }
 
-class _BookScreenState extends State<BookScreen> {
+class BookScreenState extends State<BookScreen> {
   bool isReturn = false;
   bool isReading = false;
   Duration elapsedTime = Duration.zero;

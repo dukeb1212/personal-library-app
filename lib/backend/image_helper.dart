@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -56,7 +57,9 @@ class ImageHelper {
         String url = await storageReference.getDownloadURL();
         return url;
       } catch (e) {
-        print('Error uploading image to Firebase Storage: $e');
+        if (kDebugMode) {
+          print('Error uploading image to Firebase Storage: $e');
+        }
         // Handle the error as needed
       }
     }

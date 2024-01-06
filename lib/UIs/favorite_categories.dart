@@ -7,10 +7,10 @@ class CategorySelectionPage extends StatefulWidget {
   const CategorySelectionPage({super.key});
 
   @override
-  _CategorySelectionPageState createState() => _CategorySelectionPageState();
+  CategorySelectionPageState createState() => CategorySelectionPageState();
 }
 
-class _CategorySelectionPageState extends State<CategorySelectionPage> {
+class CategorySelectionPageState extends State<CategorySelectionPage> {
   List<String> selectedCategories = [];
   int minSelectedCategories = 3;
 
@@ -73,7 +73,6 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
               onTap: canProceed()
                   ? () async {
                 final result = await getBookSuggestions(selectedCategories);
-                print(result);
               }
                   : null,
               child: Container(

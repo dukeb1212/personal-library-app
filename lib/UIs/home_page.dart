@@ -10,7 +10,7 @@ import 'book.dart';
 
 class HomePage extends StatefulWidget {
 
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -55,7 +55,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadSuggestedBooks() async {
     final databaseHelper = DatabaseHelper();
     var categories = await databaseHelper.getTopCategories(3);
-    final List<Book> allBooks = await databaseHelper.getAllBooks();
 
     if(categories.isEmpty) {
       categories = getRandomValues(bookCategories);

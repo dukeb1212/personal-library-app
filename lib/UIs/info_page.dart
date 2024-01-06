@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_test/database/book_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../backend/google_books_api.dart';
-import '../book_data.dart';
 import '../user_data.dart';
 import 'change_password_form.dart';
 import 'package:login_test/backend/password_backend.dart';
@@ -295,7 +293,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    content: Text('Phần mềm được phát trển bởi nhóm sinh viên năm 3, Đại học Bách khoa Hà Nội!'),
+                    content: const Text('Developed by students of Hanoi University of Science and Technology.\nContact: github.com/dukeb1212 for more details.'),
                     actions: [
                       TextButton(
                         onPressed: () {
@@ -326,10 +324,10 @@ class ChangePasswordForm extends StatefulWidget {
   const ChangePasswordForm({super.key});
 
   @override
-  _ChangePasswordFormState createState() => _ChangePasswordFormState();
+  ChangePasswordFormState createState() => ChangePasswordFormState();
 }
 
-class _ChangePasswordFormState extends State<ChangePasswordForm> {
+class ChangePasswordFormState extends State<ChangePasswordForm> {
   final TextEditingController _currentPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();

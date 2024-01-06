@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,10 +10,10 @@ class AutomaticLogin extends StatefulWidget {
   const AutomaticLogin({super.key});
 
   @override
-  _AutomaticLoginState createState() => _AutomaticLoginState();
+  AutomaticLoginState createState() => AutomaticLoginState();
 }
 
-class _AutomaticLoginState extends State<AutomaticLogin> {
+class AutomaticLoginState extends State<AutomaticLogin> {
   final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? '';
 
   @override
@@ -28,29 +26,33 @@ class _AutomaticLoginState extends State<AutomaticLogin> {
     // Check if a token exists in shared preferences
     final prefs = await SharedPreferences.getInstance();
     final storedToken = prefs.getString('token');
-    if (storedToken != null) {
-      // Use the stored token to attempt automatic login
-      final loginSuccess = await _attemptAutomaticLogin(storedToken);
-      if (loginSuccess) {
-        final provider = container.read(userProvider);
-        final userData = await retrieveUserData();
-        provider.setUser(userData);
-
-        final databaseHelper = DatabaseHelper();
-        await databaseHelper.syncBooksFromServer(userData.userId, userData.username);
-
+    if (mounted) {
+      if (storedToken != null) {
+        // Use the stored token to attempt automatic login
+        final loginSuccess = await _attemptAutomaticLogin(storedToken);
         if (mounted) {
-          // Navigate to the authenticated part of your app
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MyMainPage()),
-          );
+          if (loginSuccess) {
+            final provider = container.read(userProvider);
+            final userData = await retrieveUserData();
+            provider.setUser(userData);
+
+            final databaseHelper = DatabaseHelper();
+            await databaseHelper.syncBooksFromServer(userData.userId, userData.username);
+
+            // Navigate to the authenticated part of your app
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MyMainPage()),
+              );
+            }
+          } else {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
         }
       } else {
         Navigator.pushReplacementNamed(context, '/login');
       }
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 

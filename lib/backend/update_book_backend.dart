@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:ffi';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:login_test/book_data.dart';
-import '../user_data.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UpdateBookBackend {
@@ -42,7 +41,9 @@ class UpdateBookBackend {
           'message': 'Book added/updated successfully',
         };
       } else {
-        print('Response body on error: ${response.body}');
+        if (kDebugMode) {
+          print('Response body on error: ${response.body}');
+        }
         return {
           'success': false,
           'message': 'Failed to add/update book. Status code: ${response.statusCode}',
@@ -90,7 +91,9 @@ class UpdateBookBackend {
           'message': 'Book added/updated successfully',
         };
       } else {
-        print('Response body on error: ${response.body}');
+        if (kDebugMode) {
+          print('Response body on error: ${response.body}');
+        }
         return {
           'success': false,
           'message': 'Failed to add/update book. Status code: ${response.statusCode}',
@@ -113,7 +116,9 @@ class UpdateBookBackend {
     if (response.statusCode == 200) {
       return 'Book deleted successfully';
     } else {
-      print('Failed to delete BookState. Status code: ${response.statusCode}');
+      if (kDebugMode) {
+        print('Failed to delete BookState. Status code: ${response.statusCode}');
+      }
       return 'Failed to delete book, please try again later.';
     }
   }

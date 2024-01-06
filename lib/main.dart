@@ -2,7 +2,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'UIs/login_page.dart';
-import 'UIs/automaticLogin.dart';
+import 'UIs/automatic_login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Authentication App',
       theme: ThemeData(
-          primarySwatch: getMaterialColor(Color(0xff404040)),
+          primarySwatch: getMaterialColor(const Color(0xff404040)),
           // colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff404040)),
           visualDensity: VisualDensity.adaptivePlatformDensity,
           focusColor: Colors.grey,

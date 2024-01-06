@@ -9,10 +9,10 @@ class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  RegisterPageState createState() => RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _retypePasswordController = TextEditingController();
@@ -86,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               TextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Tài khoản'),
+                decoration: const InputDecoration(labelText: 'Username'),
               ),
               const SizedBox(height: 5),
               Row(
@@ -95,7 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: TextField(
                       controller: _passwordController,
                       decoration: const InputDecoration(
-                        labelText: 'Mật khẩu',
+                        labelText: 'Password',
                       ),
                       obscureText: !_isPasswordVisible,
                     ),
@@ -114,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Expanded(
                     child: TextField(
                       controller: _retypePasswordController,
-                      decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu'),
+                      decoration: const InputDecoration(labelText: 'Password Confirmation'),
                       obscureText: true,
                       onChanged: (_) => _checkPasswordMatch(),
                     ),
@@ -125,7 +125,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    'Mật khẩu xác thực không khớp!',
+                    'Passwords do not match each other!',
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
@@ -137,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 5),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Họ và tên'),
+                decoration: const InputDecoration(labelText: 'Name'),
               ),
               const SizedBox(height: 5),
               TextField(
@@ -153,7 +153,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             return newValue;
                           }
                         } catch (e) {
-                          print("Error");
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(content: Text('Error')));
                         }
                         return oldValue;
                       }),

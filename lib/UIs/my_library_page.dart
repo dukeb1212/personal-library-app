@@ -1,9 +1,4 @@
-import 'dart:collection';
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/UIs/book.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -11,17 +6,14 @@ import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
 
-String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
-String fbpassword = dotenv.env['FIREBASE_PASSWORD'] ?? '';
-
 class MyLibraryPage extends StatefulWidget {
   const MyLibraryPage({super.key});
 
   @override
-  _MyLibraryPageState createState() => _MyLibraryPageState();
+  MyLibraryPageState createState() => MyLibraryPageState();
 }
 
-class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveClientMixin {
+class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -114,7 +106,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCl
             ),
           );
         },
-        backgroundColor: Color(0xff404040).withOpacity(0.8),
+        backgroundColor: const Color(0xff404040).withOpacity(0.8),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -530,10 +522,10 @@ class FilterDialog extends StatefulWidget {
   });
 
   @override
-  _FilterDialogState createState() => _FilterDialogState();
+  FilterDialogState createState() => FilterDialogState();
 }
 
-class _FilterDialogState extends State<FilterDialog> {
+class FilterDialogState extends State<FilterDialog> {
   String selectedCategory = '';
   String selectedAuthor = '';
   bool filterNewest = false;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:login_test/book_data.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
@@ -48,7 +49,6 @@ Future<Map<String, dynamic>> getBookSuggestions(List<String> selectedCategories)
 
 Future<Map<String, dynamic>> getBookByISBN(String isbn) async {
   final Map<String, dynamic> bookInfo = {};
-  final bookId = isbn;
 
   final encodedISBN = Uri.encodeComponent(isbn);
   final response = await http.get(
@@ -118,7 +118,9 @@ Future<Book?> getBookByBarcode() async {
     ScanResult barcode = await BarcodeScanner.scan();
     scannedBarcode = barcode.rawContent;
   } catch (e) {
-    print('Error: $e');
+    if (kDebugMode) {
+      print('Error: $e');
+    }
     return null; // or handle the error appropriately
   }
   if (scannedBarcode.isNotEmpty) {
@@ -129,10 +131,13 @@ Future<Book?> getBookByBarcode() async {
       Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
       return retrievedBook;
     } else {
-      print('Error: ${result['message']}');
+      if (kDebugMode) {
+        print('Error: ${result['message']}');
+      }
       return null; // or handle the error appropriately
     }
   }
+  return null;
 }
 
 Future<Map<String, dynamic>> getBookByCategory(String category) async {
@@ -234,7 +239,9 @@ Future<List<Book>> getSuggestBook(String category) async {
       newBooks.add(retrievedBook);
     }
   } else {
-    print('failed');
+    if (kDebugMode) {
+      print('failed');
+    }
   }
   return newBooks;
 }

@@ -33,10 +33,10 @@ class ChangePasswordForm extends StatefulWidget {
   const ChangePasswordForm({super.key});
 
   @override
-  _ChangePasswordFormState createState() => _ChangePasswordFormState();
+  ChangePasswordFormState createState() => ChangePasswordFormState();
 }
 
-class _ChangePasswordFormState extends State<ChangePasswordForm> {
+class ChangePasswordFormState extends State<ChangePasswordForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _currentPasswordController =
       TextEditingController();
@@ -119,7 +119,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   const InputDecoration(labelText: 'Confirm New Password'),
               validator: (value) {
                 if (value != _newPasswordController.text) {
-                  return 'Passwords do not match';
+                  return 'Passwords do not match each other!';
                 }
                 return null;
               },

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -26,7 +27,9 @@ class Validate {
     } else if (response.statusCode == 401 && responseBody['message'] == 'Invalid password') {
       return {'success': false, 'message': 'Invalid password'};
     }
-    print(responseBody['message']);
+    if (kDebugMode) {
+      print(responseBody['message']);
+    }
     return {'success': false, 'message': 'Server error'};
   }
 
