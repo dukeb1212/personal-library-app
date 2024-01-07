@@ -19,9 +19,11 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
 
   String currentQuery = '';
   int selectedCategoryIndex = 0;
+  int selectedTabIndex = 0;
   List<BookState> allBookStates = [];
   String selectedCategory = '';
   bool getAll = true;
+  bool getFavor = false;
   final databaseHelper = DatabaseHelper();
   int totalBooks = 0;
 
@@ -57,11 +59,11 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
             children: [
               Expanded(
                 child: TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintStyle: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18*fem,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xff404040),
+                      color: const Color(0xff404040),
                     ),
                     hintText: 'Enter title or author',
                     border: InputBorder.none,
@@ -71,10 +73,10 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                       currentQuery = query;
                     });
                   },
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18*fem,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xff404040),
+                  color: const Color(0xff404040),
                 ),
                 ),
               ),
@@ -116,7 +118,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: 20*fem),
               Text(
                 '  All ($totalBooks books)',
                 maxLines: 1,
@@ -126,9 +128,9 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10*fem),
               SizedBox(
-                height: 340,
+                height: 310*fem,
                 child: FutureBuilder<List<Book>>(
                   future: _getFilteredBooksFromDatabase(getAll),
                   builder: (context, snapshot) {
@@ -194,7 +196,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                                 child: Text(
                                   snapshot.data![index],
                                   style: TextStyle(
-                                    fontSize: 22 * fem,
+                                    fontSize: 18 * fem,
                                     fontWeight: selectedCategoryIndex == index
                                         ? FontWeight.bold
                                         : FontWeight.normal, // Make the selected category bold
@@ -210,7 +212,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                 ),
               ),
               SizedBox(
-                height: 340,
+                height: 330*fem,
                 child: FutureBuilder<List<Book>>(
                   future: _getFilteredBooksFromDatabase(!getAll),
                   builder: (context, snapshot) {
@@ -237,7 +239,6 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                   },
                 ),
               ),
-              const SizedBox(height: 20,),
               Text(
                 '  Favorites List',
                 maxLines: 1,
@@ -247,9 +248,9 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10,),
+              SizedBox(height: 10*fem,),
               SizedBox(
-                height: 340,
+                height: 330*fem,
                 child: FutureBuilder<List<Book>>(
                   future: _getFilteredBooksFromDatabase(getAll, getFavor: true),
                   builder: (context, snapshot) {
@@ -276,7 +277,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                   },
                 ),
               ),
-              const SizedBox(height: 20,),
+              SizedBox(height: 10*fem,),
             ],
           ),
       ),
@@ -434,8 +435,10 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
         }
       }
       if (getFavor != null) {
-        final resultState = allBookStates.where((bookState) => bookState.addToFavorites).toList();
-        result = result.where((book) => resultState.any((bookState) => book.id == bookState.bookId)).toList();
+        if (getFavor) {
+          final resultState = allBookStates.where((bookState) => bookState.addToFavorites).toList();
+          result = result.where((book) => resultState.any((bookState) => book.id == bookState.bookId)).toList();
+        }
       }
     }
     return result;
@@ -577,12 +580,12 @@ class FilterDialogState extends State<FilterDialog> {
   Widget build(BuildContext context) {
     double fem = MediaQuery.of(context).size.width / 360;
     return AlertDialog(
-      title: const Text(
+      title: Text(
         'Filter Books',
         style: TextStyle(
-          fontSize: 24,
+          fontSize: 24*fem,
           fontWeight: FontWeight.w700,
-          color: Color(0xff19191b),
+          color: const Color(0xff19191b),
         ),
       ),
       content: SizedBox(
@@ -592,26 +595,26 @@ class FilterDialogState extends State<FilterDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Category',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18*fem,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff19191b),
+                  color: const Color(0xff19191b),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8*fem),
               Center(
                 child: DropdownMenu<String>(
                   enableFilter: categoryController.text != 'All',
-                  textStyle: const TextStyle(
-                    fontSize: 16,
+                  textStyle: TextStyle(
+                    fontSize: 16*fem,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xff19191b),
+                    color: const Color(0xff19191b),
                   ),
                   controller: categoryController,
-                  menuHeight: 300,
-                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  menuHeight: 300*fem,
+                  width: MediaQuery.of(context).size.width - 120 * fem,
                   requestFocusOnTap: true,
                   inputDecorationTheme: const InputDecorationTheme(
                     border: OutlineInputBorder(
@@ -638,27 +641,27 @@ class FilterDialogState extends State<FilterDialog> {
                       .toList(),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16*fem),
+              Text(
                 'Author',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18*fem,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff19191b),
+                  color: const Color(0xff19191b),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8*fem),
               Center(
                 child: DropdownMenu<String>(
                   enableFilter: authorController.text != 'All',
-                  textStyle: const TextStyle(
-                    fontSize: 16,
+                  textStyle: TextStyle(
+                    fontSize: 16*fem,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xff19191b),
+                    color: const Color(0xff19191b),
                   ),
                   controller: authorController,
-                  menuHeight: 300,
-                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  menuHeight: 300*fem,
+                  width: MediaQuery.of(context).size.width - 120 * fem,
                   requestFocusOnTap: true,
                   inputDecorationTheme: const InputDecorationTheme(
                     border: OutlineInputBorder(
@@ -683,26 +686,26 @@ class FilterDialogState extends State<FilterDialog> {
                   )).toList(),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16*fem),
+              Text(
                 'Sort By',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18*fem,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff19191b),
+                  color: const Color(0xff19191b),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8*fem),
               Center(
                 child: DropdownMenu<String>(
-                  textStyle: const TextStyle(
-                    fontSize: 16,
+                  textStyle: TextStyle(
+                    fontSize: 16*fem,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xff19191b),
+                    color: const Color(0xff19191b),
                   ),
                   controller: sortController,
-                  menuHeight: 300,
-                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  menuHeight: 300*fem,
+                  width: MediaQuery.of(context).size.width - 120 * fem,
                   requestFocusOnTap: false,
                   inputDecorationTheme: const InputDecorationTheme(
                     border: OutlineInputBorder(
@@ -726,26 +729,26 @@ class FilterDialogState extends State<FilterDialog> {
                   )).toList(),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16*fem),
+              Text(
                 'Language',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18*fem,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff19191b),
+                  color: const Color(0xff19191b),
                 ),
               ),
               const SizedBox(height: 8),
               Center(
                 child: DropdownMenu<String>(
-                  textStyle: const TextStyle(
-                    fontSize: 16,
+                  textStyle: TextStyle(
+                    fontSize: 16*fem,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xff19191b),
+                    color: const Color(0xff19191b),
                   ),
                   controller: languageController,
-                  menuHeight: 300,
-                  width: MediaQuery.of(context).size.width - 110 * fem,
+                  menuHeight: 300*fem,
+                  width: MediaQuery.of(context).size.width - 120 * fem,
                   requestFocusOnTap: true,
                   inputDecorationTheme: const InputDecorationTheme(
                     border: OutlineInputBorder(

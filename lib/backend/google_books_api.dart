@@ -229,9 +229,14 @@ Future<Map<String, dynamic>> getBookByCategory(String category) async {
   };
 }
 
-Future<List<Book>> getSuggestBook(String category) async {
+Future<List<Book>> getSuggestBook(String query, int mode) async {
   List<Book> newBooks = [];
-  final result = await getBookByCategory(category);
+  Map<String, dynamic> result;
+  if (mode == 0) {
+    result = await getBookByCategory(query);
+  } else {
+    result = await getBookByAuthor(query);
+  }
   if (result['success']) {
     final booksInfo = result['books'];
     for (final bookInfo in booksInfo) {
@@ -244,5 +249,94 @@ Future<List<Book>> getSuggestBook(String category) async {
     }
   }
   return newBooks;
+}
+
+Future<Map<String, dynamic>> getBookByAuthor(String author) async {
+  final List<Map<String,dynamic>> books = [];
+  late http.Response response;
+  String encodedAuthor = author.replaceAll(' ', '+').toLowerCase();
+
+  response = await http.get(
+    Uri.parse(
+      'https://www.googleapis.com/books/v1/volumes?q=inauthor:$encodedAuthor&orderBy=newest&maxResults=20&key=$apiKey',
+    ),
+  );
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+
+    if (jsonResponse.containsKey('items') && jsonResponse['items'].isNotEmpty) {
+      for (final item in jsonResponse['items']) {
+        Map<String, dynamic> book = {};
+        if (item.containsKey('volumeInfo')) {
+          final volumeInfo = item['volumeInfo'];
+          if (volumeInfo.containsKey('title')) {
+            book['title'] = volumeInfo['title'];
+          }
+          if (volumeInfo.containsKey('subtitle')) {
+            book['subtitle'] = volumeInfo['subtitle'];
+          }
+          if (volumeInfo.containsKey('authors')) {
+            book['authors'] = volumeInfo['authors'];
+          }
+          if (volumeInfo.containsKey('categories')) {
+            book['category'] = volumeInfo['categories'][0];
+          }
+          if (volumeInfo.containsKey('publishedDate')) {
+            book['publishedDate'] = volumeInfo['publishedDate'];
+          }
+          if (volumeInfo.containsKey('description')) {
+            book['description'] = volumeInfo['description'];
+          }
+          if (volumeInfo.containsKey('pageCount')) {
+            book['pageCount'] = volumeInfo['pageCount'];
+          }
+          if (volumeInfo.containsKey('language')) {
+            book['language'] = volumeInfo['language'];
+          }
+          if (volumeInfo.containsKey('imageLinks')) {
+            book['imageLinks'] = volumeInfo['imageLinks'];
+          } else { book['imageLinks'] = {'smallThumbnail': '', 'thumbnail': ''}; }
+          // Add more fields as needed
+          if (volumeInfo.containsKey('industryIdentifiers')) {
+            List<dynamic> industryIdentifiers = volumeInfo['industryIdentifiers'];
+
+            String isbn13 = '';
+
+            for (var identifier in industryIdentifiers) {
+              if (identifier is Map<String, dynamic> && identifier.containsKey('type') && identifier.containsKey('identifier')) {
+                String type = identifier['type'];
+                String identifierCode = identifier['identifier'];
+
+                // Check for ISBN-13 and store it
+                if (type == 'ISBN_13') {
+                  isbn13 = identifierCode;
+                  break;  // Stop the loop if ISBN-13 is found
+                }
+              }
+            }
+
+            // If ISBN-13 is available, use it; otherwise, use the first identifier found
+            book['id'] = isbn13.isEmpty ? (industryIdentifiers.isNotEmpty ? industryIdentifiers[0]['identifier'] : '') : isbn13;
+          }
+          books.add(book);
+        }
+      }
+    } else {
+      return {
+        'success': false,
+        'message': 'No book found for author: $author',
+      };
+    }
+  } else {
+    return {
+      'success': false,
+      'message': 'Failed to retrieve book information for author: $author',
+    };
+  }
+
+  return {
+    'success': true,
+    'books': books,
+  };
 }
 

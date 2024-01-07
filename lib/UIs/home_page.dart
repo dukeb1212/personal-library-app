@@ -19,7 +19,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<BookState> recentlyReadBookStates = [];
   List<Book> recentlyReadBooks = [];
-  List<Book> suggestedBooks = [];
+  List<Book> suggestedBooksByCategory = [];
+  List<Book> suggestedBooksByAuthor = [];
+  List<String> topAuthors = [];
 
   @override
   void initState() {
@@ -55,13 +57,17 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadSuggestedBooks() async {
     final databaseHelper = DatabaseHelper();
     var categories = await databaseHelper.getTopCategories(3);
+    topAuthors = await databaseHelper.getTopAuthors(3);
 
     if(categories.isEmpty) {
       categories = getRandomValues(bookCategories);
     }
     for (final category in categories) {
-      final result = await getSuggestBook(category);
-      suggestedBooks += result;
+      final result = await getSuggestBook(category, 0);
+      suggestedBooksByCategory += result;
+    }
+    if (topAuthors.isNotEmpty) {
+      suggestedBooksByAuthor = await getSuggestBook(topAuthors.first, 1);
     }
 
     if (mounted) {
@@ -84,20 +90,20 @@ class _HomePageState extends State<HomePage> {
           children: [
             SizedBox(height: 20*fem,),
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.fromLTRB(10*fem, 16*fem, 16*fem, 16*fem),
               child: RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontSize: 20, color: Colors.black), // Default style for the entire text
+                  style: TextStyle(fontSize: 20*fem, color: Colors.black), // Default style for the entire text
                   children: [
                     const TextSpan(
                       text: 'Welcome ',
                     ),
                     TextSpan(
                       text: userName,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: 20*fem,
                         fontWeight: FontWeight.bold, // Make the username bold
-                        color: Color(0xff404040), // Change the color to stand out
+                        color: const Color(0xff404040), // Change the color to stand out
                       ),
                     ),
                     const TextSpan(
@@ -123,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 10.0*fem,),
                   SizedBox(
-                    height: 340,
+                    height: 320*fem,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: recentlyReadBookStates.map((bookState) {
@@ -143,7 +149,6 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(height: 20 * fem,),
                 ],
               ),
             Padding(
@@ -156,12 +161,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            SizedBox(height: 10*fem,),
             SizedBox(
-              height: 340,
+              height: 320*fem,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: suggestedBooks.map((book) {
+                children: suggestedBooksByCategory.map((book) {
                   return FutureBuilder<Widget>(
                     // Assuming _buildRecentlyReadBookAsync is an asynchronous function
                     future: _buildSuggestedBook(book),
@@ -178,7 +182,48 @@ class _HomePageState extends State<HomePage> {
                 }).toList(),
               ),
             ),
-            SizedBox(height: 20 *fem,),
+            if (topAuthors.isNotEmpty)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
+                    child: Text(
+                      'More from ${shortenName(topAuthors[0])}',
+                      style: TextStyle(
+                        fontSize: 25 * fem,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(height: 10 *fem,),
+                  SizedBox(
+                    height: 320*fem,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: suggestedBooksByAuthor.map((book) {
+                        return FutureBuilder<Widget>(
+                          // Assuming _buildRecentlyReadBookAsync is an asynchronous function
+                          future: _buildSuggestedBook(book),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.done) {
+                              // If the Future is complete, return the widget
+                              return snapshot.data ?? const SizedBox.shrink(); // Handle null case if needed
+                            } else {
+                              // If the Future is not complete, you can return a loading indicator or an empty container
+                              return const CircularProgressIndicator(); // Replace with your loading indicator
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 10 *fem,),
+                ],
+              )
       ],
         ),
       ),

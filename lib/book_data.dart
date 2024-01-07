@@ -379,6 +379,20 @@ String truncateAuthorName(String authorName) {
   }
 }
 
+String shortenName(String fullName) {
+  List<String> names = fullName.split(' ');
+
+  if (names.length < 2) {
+    // Handle cases where the full name does not have both first and last names
+    return fullName;
+  }
+
+  String firstNameInitial = names[0][0].toUpperCase();
+  String lastName = names.last;
+
+  return '$firstNameInitial. $lastName';
+}
+
 List<String> getRandomValues(List<String> inputList) {
   Random random = Random();
   List<String> randomValues = [];

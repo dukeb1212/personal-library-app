@@ -319,6 +319,21 @@ class DatabaseHelper {
     return categoriesData.map((map) => map['category'].toString()).toList();
   }
 
+  Future<List<String>> getTopAuthors(int numberOfAuthors) async {
+    final List<Map<String, dynamic>> result = await _db.rawQuery('''
+    SELECT authors.author_name, COUNT(write_book.book_id) as book_count
+    FROM authors
+    INNER JOIN write_book ON authors.author_id = write_book.author_id
+    GROUP BY authors.author_name
+    ORDER BY book_count DESC
+    LIMIT ?
+  ''', [numberOfAuthors]);
+
+    final List<String> authorNames = result.map((author) => author['author_name'].toString()).toList();
+
+    return authorNames;
+  }
+
   Future<void> deleteBookAndAuthor(String bookId) async {
     await _db.transaction((txn) async {
       // Get the author IDs associated with the book

@@ -102,219 +102,225 @@ class _UserInfoPageState extends State<UserInfoPage> {
     userId = userInfo.userId;
 
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            userInfo.name,
-            style: GoogleFonts.waterfall(
-              fontSize: 50*fem,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 20 * fem),
-          ProfileButton(
-            label: 'Account',
-            icon: Icons.manage_accounts,
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text(
-                      'Edit account',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: nameController,
-                          decoration: const InputDecoration(labelText: 'Full name'),
-                        ),
-                        TextField(
-                          controller: usernameController,
-                          decoration: const InputDecoration(labelText: 'Username'),
-                        ),
-                        TextField(
-                          controller: emailController,
-                          decoration: const InputDecoration(labelText: 'Email'),
-                        ),
-                        TextField(
-                          controller: ageController,
-                          decoration: const InputDecoration(labelText: 'Age'),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          await submitInfo();
-                          if (mounted) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: const Text('Save'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-          ProfileButton(
-            label: 'Change Password',
-            icon: Icons.lock,
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return const ChangePasswordForm(); // Use your ChangePasswordForm here
-                },
-              );
-            },
-          ),
-          ProfileButton(
-            label: 'Achievement',
-            icon: Icons.leaderboard_rounded,
-            onPressed: () async {
-              await updateAchievement(userId);
-              if (mounted) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text(
-                        'Achievement',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              text: 'Total number of your book: ',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14 * fem,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: totalBooks.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
+      body: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height-40*fem),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                userInfo.name,
+                style: GoogleFonts.waterfall(
+                  fontSize: 50*fem,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 20 * fem),
+              ProfileButton(
+                label: 'Account',
+                icon: Icons.manage_accounts,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Edit account',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
                           ),
-                          SizedBox(height: 5*fem,),
-                          RichText(
-                            text: TextSpan(
-                              text: 'Total hours you have read: ',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14 * fem,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: totalReadHours.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
+                        ),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: nameController,
+                              decoration: const InputDecoration(labelText: 'Full name'),
                             ),
+                            TextField(
+                              controller: usernameController,
+                              decoration: const InputDecoration(labelText: 'Username'),
+                            ),
+                            TextField(
+                              controller: emailController,
+                              decoration: const InputDecoration(labelText: 'Email'),
+                            ),
+                            TextField(
+                              controller: ageController,
+                              decoration: const InputDecoration(labelText: 'Age'),
+                              keyboardType: TextInputType.number,
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
                           ),
-                          SizedBox(height: 5*fem,),
-                          RichText(
-                            text: TextSpan(
-                              text: 'Total number of books you have completed: ',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14 * fem,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              children:  <TextSpan>[
-                                TextSpan(
-                                  text: totalCompletedBooks.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          TextButton(
+                            onPressed: () async {
+                              await submitInfo();
+                              if (mounted) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: const Text('Save'),
                           ),
                         ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
-            },
-          ),
-          ProfileButton(
-            label: 'About',
-            icon: Icons.info_rounded,
-            onPressed: () {
-              // Xử lý khi nhấn nút About
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text(
-                      'About',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    content: const Text('Developed by students of Hanoi University of Science and Technology.\nContact: github.com/dukeb1212 for more details.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Ok'),
-                      ),
-                    ],
+                      );
+                    },
                   );
                 },
-              );
-            },
+              ),
+              ProfileButton(
+                label: 'Change Password',
+                icon: Icons.lock,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return const ChangePasswordForm(); // Use your ChangePasswordForm here
+                    },
+                  );
+                },
+              ),
+              ProfileButton(
+                label: 'Achievement',
+                icon: Icons.leaderboard_rounded,
+                onPressed: () async {
+                  await updateAchievement(userId);
+                  if (mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text(
+                            'Achievement',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  text: 'Total number of your book: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14 * fem,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: totalBooks.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 5*fem,),
+                              RichText(
+                                text: TextSpan(
+                                  text: 'Total hours you have read: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14 * fem,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: totalReadHours.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 5*fem,),
+                              RichText(
+                                text: TextSpan(
+                                  text: 'Total number of books you have completed: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14 * fem,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  children:  <TextSpan>[
+                                    TextSpan(
+                                      text: totalCompletedBooks.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+              ProfileButton(
+                label: 'About',
+                icon: Icons.info_rounded,
+                onPressed: () {
+                  // Xử lý khi nhấn nút About
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'About',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        content: const Text('Developed by students of Hanoi University of Science and Technology.\nContact: github.com/dukeb1212 for more details.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Ok'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              ProfileButton(
+                label: 'Log Out',
+                icon: Icons.logout_rounded,
+                onPressed: () {
+                  logout();
+                },
+              ),
+            ],
           ),
-          ProfileButton(
-            label: 'Log Out',
-            icon: Icons.logout_rounded,
-            onPressed: () {
-              logout();
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -378,121 +384,135 @@ class ChangePasswordFormState extends State<ChangePasswordForm> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          const Text(
-            'Change password',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
+    double baseWidth = 360;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+    return Dialog(
+      insetPadding: EdgeInsets.all(35*fem),
+      child: Padding(
+        padding: EdgeInsets.all(20.0*fem),
+        child: SingleChildScrollView(
+          child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Change password',
+                      style: TextStyle(
+                        fontSize: 22*fem,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    IconButton(
+                      iconSize: 20*fem,
+                      icon: Icon(
+                        isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: togglePasswordVisibility,
+                    ),
+                  ],
+                ),
+                TextField(
+                  controller: _currentPasswordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Current password',
+                  ),
+                  obscureText: !isPasswordVisible,
+                  onChanged: (_) {
+                    if (!checkCurrentPassword) {
+                      setState(() {
+                        checkCurrentPassword = true;
+                      });
+                    }
+                  },
+                ),
+                SizedBox(height: 5*fem),
+                if (!checkCurrentPassword)
+                  Padding(
+                    padding: EdgeInsets.all(8.0*fem),
+                    child: Text(
+                      'Wrong current password!',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14.0*fem,
+                      ),
+                    ),
+                  ),
+                TextField(
+                  controller: _newPasswordController,
+                  decoration: const InputDecoration(
+                    labelText: 'New password',
+                  ),
+                  obscureText: !isPasswordVisible,
+                  onChanged: (_) {
+                    if (!isChangePasswordSuccessful) {
+                      setState(() {
+                        isChangePasswordSuccessful = true;
+                      });
+                    }
+                    checkPasswordMatch();
+                  },
+                ),
+                SizedBox(height: 5*fem),
+                TextField(
+                  controller: _confirmPasswordController,
+                  decoration: const InputDecoration(labelText: 'Reconfirm new password'),
+                  obscureText: !isPasswordVisible,
+                  onChanged: (_) => checkPasswordMatch(),
+                ),
+                if (!passwordsMatch)
+                  Padding(
+                    padding: EdgeInsets.all(8.0*fem),
+                    child: Text(
+                      'Password confirmation unmatched!',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14.0*fem,
+                      ),
+                    ),
+                  ),
+                if (!isChangePasswordSuccessful)
+                  Padding(
+                    padding: EdgeInsets.all(8.0*fem),
+                    child: Text(
+                      errorMessage,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14.0*fem,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: 50*fem,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await checkPassword(_currentPasswordController.text);
+                        // Proceed with password change logic
+                        if (isCurrentPasswordValid) {
+                          // Call a function to handle the password change process
+                          submit(_newPasswordController.text);
+                        } else {
+                          setState(() {
+                            checkCurrentPassword = false;
+                          });
+                        }
+                      },
+                      child: const Text('Change'),
+                    ),
+                  ],
+                )
+              ],
             ),
-          ),
-          IconButton(
-            icon: Icon(
-              isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            ),
-            onPressed: togglePasswordVisibility,
-          ),
-        ],
+        ),
       ),
-      content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _currentPasswordController,
-              decoration: const InputDecoration(
-                labelText: 'Current password',
-              ),
-              obscureText: !isPasswordVisible,
-              onChanged: (_) {
-                if (!checkCurrentPassword) {
-                  setState(() {
-                    checkCurrentPassword = true;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 5),
-            if (!checkCurrentPassword)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Wrong current password!',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            TextField(
-              controller: _newPasswordController,
-              decoration: const InputDecoration(
-                labelText: 'New password',
-              ),
-              obscureText: !isPasswordVisible,
-              onChanged: (_) {
-                if (!isChangePasswordSuccessful) {
-                  setState(() {
-                    isChangePasswordSuccessful = true;
-                  });
-                }
-                checkPasswordMatch();
-              },
-            ),
-            const SizedBox(height: 5),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'Reconfirm new password'),
-              obscureText: !isPasswordVisible,
-              onChanged: (_) => checkPasswordMatch(),
-            ),
-            if (!passwordsMatch)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Password confirmation unmatched!',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            if (!isChangePasswordSuccessful)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  errorMessage,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () async {
-            await checkPassword(_currentPasswordController.text);
-            // Proceed with password change logic
-            if (isCurrentPasswordValid) {
-                // Call a function to handle the password change process
-              submit(_newPasswordController.text);
-            } else {
-              setState(() {
-                checkCurrentPassword = false;
-              });
-            }
-          },
-          child: const Text('Change'),
-        ),
-      ],
     );
   }
 }
