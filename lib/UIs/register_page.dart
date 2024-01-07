@@ -115,7 +115,7 @@ class RegisterPageState extends State<RegisterPage> {
                     child: TextField(
                       controller: _retypePasswordController,
                       decoration: const InputDecoration(labelText: 'Password Confirmation'),
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       onChanged: (_) => _checkPasswordMatch(),
                     ),
                   ),

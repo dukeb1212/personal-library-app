@@ -53,49 +53,46 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: null,
-        title: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintStyle: TextStyle(
-                      fontSize: 18*fem,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xff404040),
-                    ),
-                    hintText: 'Enter title or author',
-                    border: InputBorder.none,
+        title: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: InputDecoration(
+                  hintStyle: TextStyle(
+                    fontSize: 18*fem,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xff404040),
                   ),
-                  onChanged: (query) {
-                    setState(() {
-                      currentQuery = query;
-                    });
-                  },
-                style: TextStyle(
-                  fontSize: 18*fem,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xff404040),
+                  hintText: 'Enter title or author',
+                  border: InputBorder.none,
                 ),
-                ),
-              ),
-              // Search icon
-              IconButton(
-                icon: const Icon(Icons.search, color: Color(0xff404040),),
-                onPressed: () {
-                  _updateBookList();
+                onChanged: (query) {
+                  setState(() {
+                    currentQuery = query;
+                  });
                 },
+              style: TextStyle(
+                fontSize: 18*fem,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xff404040),
               ),
-              // Stack or List icon
-              IconButton(
-                icon: const Icon(Icons.filter_alt, color: Color(0xff404040)), // You can change the icon
-                onPressed: () {
-                  _showFilterDialog(context);
-                },
               ),
-            ],
-          ),
+            ),
+            // Search icon
+            IconButton(
+              icon: const Icon(Icons.search, color: Color(0xff404040),),
+              onPressed: () {
+                _updateBookList();
+              },
+            ),
+            // Stack or List icon
+            IconButton(
+              icon: const Icon(Icons.filter_alt, color: Color(0xff404040)), // You can change the icon
+              onPressed: () {
+                _showFilterDialog(context);
+              },
+            ),
+          ],
         ),
         backgroundColor: const Color(0xffffffff), // Set the app bar background color to black
       ),
@@ -119,13 +116,16 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 20*fem),
-              Text(
-                '  All ($totalBooks books)',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 24 * fem,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.only(left: 10*fem),
+                child: Text(
+                  'All ($totalBooks books)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 24 * fem,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               SizedBox(height: 10*fem),
@@ -139,7 +139,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No book found!');
+                      return const Center(child: Text('No book found!'));
                     } else {
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
@@ -221,7 +221,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No book found!');
+                      return const Center(child: Text('No book found!'));
                     } else {
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
@@ -239,13 +239,16 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                   },
                 ),
               ),
-              Text(
-                '  Favorites List',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 24 * fem,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.only(left: 10*fem),
+                child: Text(
+                  'Favorites List',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 24 * fem,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               SizedBox(height: 10*fem,),
@@ -259,7 +262,7 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No book found!');
+                      return const Center(child: Text('No book found!'));
                     } else {
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
@@ -458,46 +461,64 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
       onTap: () {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookScreen(book: book, bookState: bookState)));
       },
-      child: Container(
-        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
-        width: 150 * fem,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 250 * fem,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12 * fem),
-                image: DecorationImage(
-                  image: bookCover,
-                  fit: BoxFit.cover,
-                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+      child: Stack(
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+            width: 150 * fem,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 250 * fem,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12 * fem),
+                    image: DecorationImage(
+                      image: bookCover,
+                      fit: BoxFit.cover,
+                      onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10 * fem),
+                Text(
+                  book.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16 * fem,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  book.authors.length > 1
+                      ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
+                      : book.authors[0],
+                  style: TextStyle(
+                    fontSize: 16 * fem,
+                    color: Colors.grey,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+              top: 4,
+              right: 4,
+              child: SizedBox(
+                width: 20.0, // Adjust the size as needed
+                height: 20.0,
+                child: CircularProgressIndicator(
+                  value: bookState.percentRead / 100.0, // Set the progress value based on the percentage
+                  strokeWidth: 4.0, // Adjust the thickness of the circular progress indicator
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  backgroundColor: Colors.grey,
                 ),
               ),
-            ),
-            SizedBox(height: 10 * fem),
-            Text(
-              book.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16 * fem,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              book.authors.length > 1
-                  ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
-                  : book.authors[0],
-              style: TextStyle(
-                fontSize: 16 * fem,
-                color: Colors.grey,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

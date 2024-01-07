@@ -253,49 +253,67 @@ class _HomePageState extends State<HomePage> {
 
     BookState bs = allBookStates.where((bookState) => bookState.bookId == foundBook.id).first;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookScreen(book: foundBook, bookState: bs)));
-      },
-      child: Container(
-        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
-        width: 150 * fem,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 250 * fem,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12 * fem),
-                image: DecorationImage(
-                  image: bookCover,
-                  fit: BoxFit.cover,
-                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookScreen(book: foundBook, bookState: bs)));
+          },
+          child: Container(
+            margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+            width: 150 * fem,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 250 * fem,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12 * fem),
+                    image: DecorationImage(
+                      image: bookCover,
+                      fit: BoxFit.cover,
+                      onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(height: 10 * fem),
+                Text(
+                  foundBook.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16 * fem,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Last Read: $timeAgo',
+                  style: TextStyle(
+                    fontSize: 16 * fem,
+                    color: Colors.grey,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            SizedBox(height: 10 * fem),
-            Text(
-              foundBook.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16 * fem,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'Last Read: $timeAgo',
-              style: TextStyle(
-              fontSize: 16 * fem,
-              color: Colors.grey,
-            ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+          ),
         ),
-      ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: SizedBox(
+            width: 20.0, // Adjust the size as needed
+            height: 20.0,
+            child: CircularProgressIndicator(
+              value: bs.percentRead / 100.0, // Set the progress value based on the percentage
+              strokeWidth: 4.0, // Adjust the thickness of the circular progress indicator
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: Colors.grey,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -366,6 +366,28 @@ class DatabaseHelper {
       }
     });
   }
+
+  Future<void> updatePercentReadForAllBooks() async {
+    final List<Map<String, dynamic>> booksData = await _db.query('books');
+
+    for (var bookData in booksData) {
+      int lastPageRead = bookData['last_page_read'];
+      int totalPages = bookData['total_pages'];
+
+      if (totalPages > 0) {
+        double percentRead = (lastPageRead / totalPages) * 100.0;
+
+        // Update the 'percent_read' in the 'books' table
+        await _db.update(
+          'books',
+          {'percent_read': percentRead},
+          where: 'book_id = ?',
+          whereArgs: [bookData['book_id']],
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+  }
 }
 
 

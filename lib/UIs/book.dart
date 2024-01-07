@@ -87,7 +87,7 @@ class BookScreenState extends State<BookScreen> {
               isReading = true;
             });
             startReadingTimer();
-            Navigator.of(context).pop(true);
+            Navigator.of(context).pop(false);
             return true;
           },
           child: AlertDialog(
@@ -142,6 +142,7 @@ class BookScreenState extends State<BookScreen> {
                     final provider = container.read(userProvider);
                     final UserData? user = provider.user;
 
+                    bookState.percentRead = 100 * bookState.lastPageRead / widget.book!.totalPages ;
                     bookState.totalReadHours += elapsedTime.inSeconds/3600;
 
                     final result = await updateBookBackend.addBookToLibrary(bookState);

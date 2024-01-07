@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:login_test/database/book_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
-import 'change_password_form.dart';
+
 import 'package:login_test/backend/password_backend.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+final provider = container.read(userProvider);
 
 class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
@@ -131,27 +133,29 @@ class _UserInfoPageState extends State<UserInfoPage> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextField(
-                              controller: nameController,
-                              decoration: const InputDecoration(labelText: 'Full name'),
-                            ),
-                            TextField(
-                              controller: usernameController,
-                              decoration: const InputDecoration(labelText: 'Username'),
-                            ),
-                            TextField(
-                              controller: emailController,
-                              decoration: const InputDecoration(labelText: 'Email'),
-                            ),
-                            TextField(
-                              controller: ageController,
-                              decoration: const InputDecoration(labelText: 'Age'),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ],
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: nameController,
+                                decoration: const InputDecoration(labelText: 'Full name'),
+                              ),
+                              TextField(
+                                controller: usernameController,
+                                decoration: const InputDecoration(labelText: 'Username'),
+                              ),
+                              TextField(
+                                controller: emailController,
+                                decoration: const InputDecoration(labelText: 'Email'),
+                              ),
+                              TextField(
+                                controller: ageController,
+                                decoration: const InputDecoration(labelText: 'Age'),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ],
+                          ),
                         ),
                         actions: [
                           TextButton(
@@ -339,6 +343,7 @@ class ChangePasswordFormState extends State<ChangePasswordForm> {
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   final validate = Validate();
+  final username = provider.user?.username.toString();
 
   bool isCurrentPasswordValid = false;
   bool checkCurrentPassword = true;

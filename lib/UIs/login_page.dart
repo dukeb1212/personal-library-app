@@ -20,6 +20,7 @@ class LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
+  bool _isPasswordVisible = false;
 
   void _submit() async {
     final username = _usernameController.text;
@@ -60,6 +61,12 @@ class LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,10 +91,22 @@ class LoginPageState extends State<LoginPage> {
                 decoration: const InputDecoration(labelText: 'Username'),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: !_isPasswordVisible,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: _togglePasswordVisibility,
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               Row(
