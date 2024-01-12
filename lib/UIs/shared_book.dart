@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_test/UIs/add_book_page_final.dart';
+import 'package:login_test/UIs/book.dart';
 import 'package:login_test/backend/update_book_backend.dart';
 import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
@@ -48,13 +49,36 @@ class SharedBookScreenState extends State<SharedBookScreen> {
       height: 50 * fem,
       width: MediaQuery.of(context).size.width - 38 * fem,
       child: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddBookScreen(book: widget.book),
-            ),
-          );
+        onPressed: () async {
+          final result = await localDatabase.doesBookExist(widget.book!.id);
+          if (mounted) {
+            if (result['existed']) {
+              if (result.containsKey('book') && result.containsKey('bookState')) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookScreen(book: result['book'], bookState: result['bookState'],),
+                  ),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Book had already existed!')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Failed to load the book!')),
+                );
+              }
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddBookScreen(book: widget.book),
+                ),
+              );
+            }
+          }
         },
         backgroundColor: const Color(0xff404040),
         shape: RoundedRectangleBorder(
