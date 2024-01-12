@@ -10,6 +10,7 @@ import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
 import 'package:login_test/backend/image_helper.dart';
+import 'book.dart';
 import 'main_page.dart';
 
 String fbemail = dotenv.env['FIREBASE_EMAIL'] ?? '';
@@ -183,14 +184,6 @@ class AddBookScreenState extends State<AddBookScreen> {
         child: Scaffold(
             appBar: AppBar(
               backgroundColor: const Color(0xff404040),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.upload),
-                  onPressed: () {
-                    //Xử lý Upload file ở đây
-                  },
-                ),
-              ],
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
@@ -777,22 +770,29 @@ class AddBookScreenState extends State<AddBookScreen> {
                     _currentIndex = index;
                   });
                   if (index == 1) {
-                    Book? book = await getBookByBarcode();
+                    final result = await getBookByBarcode();
                     setState(() {
                       _currentIndex = 0;
                     });
-                    if (book != null) {
+                    if (result['success']) {
                       setState(() {
-                        widget.book = book;
+                        widget.book = result['book'];
                         isImageSelected = false;
                         initializeState();
                       });
                     } else {
                       if (mounted) {
+                        if (result.containsKey('book') && result.containsKey('bookState')) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BookScreen(book: result['book'], bookState: result['bookState'],),
+                            ),
+                          );
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Cannot find the book, please try another one!')),
+                          SnackBar(
+                              content: Text(result['message'])),
                         );
                       }
                     }

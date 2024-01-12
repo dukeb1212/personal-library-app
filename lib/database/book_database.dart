@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import '../book_data.dart';
+import '../user_data.dart';
 
 class DatabaseHelper {
   final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? '';
@@ -386,6 +387,29 @@ class DatabaseHelper {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
+    }
+  }
+
+  Future<Map<String, dynamic>> doesBookExist(String bookId) async {
+    final List<Map<String, dynamic>> results = await _db.query(
+      'books',
+      where: 'book_id = ?',
+      whereArgs: [bookId],
+    );
+
+    if(results.isNotEmpty) {
+      final provider = container.read(userProvider);
+      final int? userId = provider.user?.userId;
+      return {
+        'existed' : true,
+        'book' : _mapToBook(results.first),
+        'bookState' : _mapToBookState(results.first, userId!)
+      };
+    } else {
+      return {
+        'existed' : false,
+        'message' : 'Book not found!'
+      };
     }
   }
 }

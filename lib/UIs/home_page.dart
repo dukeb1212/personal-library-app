@@ -324,7 +324,7 @@ class _HomePageState extends State<HomePage> {
 
     final result = await databaseHelper.doesBookExist(book.id);
     if (result['existed']) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     } else {
       return GestureDetector(
         onTap: () {

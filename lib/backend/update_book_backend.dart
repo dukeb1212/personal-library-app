@@ -122,4 +122,22 @@ class UpdateBookBackend {
       return 'Failed to delete book, please try again later.';
     }
   }
+
+  Future<Map<String, dynamic>> getBookByBookId(String bookId) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/book/$bookId"), // Replace with your server URL
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseBody = json.decode(response.body);
+      final bookJson = responseBody['book'];
+      final book = Book.fromMap(bookJson);
+      return {'success': true, 'book': book};
+    } else {
+      return {'success': false, 'message': 'Failed to get the book!'};
+    }
+  }
 }

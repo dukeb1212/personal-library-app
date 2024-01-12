@@ -1,9 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:login_test/backend/notification_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
 import 'register_page.dart';
