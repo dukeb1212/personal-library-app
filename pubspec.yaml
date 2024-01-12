@@ -55,6 +55,7 @@ dependencies:
   dropdown_search: ^5.0.6
   scrollable_positioned_list: ^0.3.8
   qr_flutter: ^4.1.0
+  flutter_launcher_icons: ^0.13.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -74,6 +75,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/ver02/images/alpha-bookstorelogodark-ver.png"
 
 # The following section is specific to Flutter packages.
 flutter:
