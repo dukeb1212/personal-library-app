@@ -5,6 +5,7 @@ import 'package:login_test/backend/update_book_backend.dart';
 import 'dart:async';
 import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../user_data.dart';
 import 'main_page.dart';
 
@@ -323,58 +324,101 @@ class BookScreenState extends State<BookScreen> {
                     ),
                   ),
                   Positioned(
-                    top: - 12.0*fem,
-                    right: -5.5*fem,
-                    child: IconButton(
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: bookState.addToFavorites
-                                    ? const Text('Remove from favorites list?')
-                                    : const Text('Add to favorites list?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('Cancel')
-                                  ),
-                                  TextButton(
-                                      onPressed: () async {
-                                        bookState.addToFavorites = !bookState.addToFavorites;
-
-                                        final updateBookBackend = UpdateBookBackend();
-                                        final result = await updateBookBackend.addBookToLibrary(bookState);
-
-                                        if (mounted) {
-                                          if (result['success']) {
-                                            final String action = bookState.addToFavorites ? 'add to' : 'remove from';
+                    top: - 11.0*fem,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: bookState.addToFavorites
+                                        ? const Text('Remove from favorites list?')
+                                        : const Text('Add to favorites list?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
                                             Navigator.pop(context);
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(content: Text('Successfully $action favorites list!')));
-                                            setState(() {});
-                                            await localDatabase.syncBooksFromServer(user!.userId, user.username);
-                                          } else {
-                                            Navigator.pop(context);
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(content: Text(result['message'])));
-                                          }
-                                        }
-                                      },
-                                      child: const Text('Yes')
-                                  ),
-                                ],
-                              );
-                            }
-                        );
-                      },
-                      icon: Icon(
-                        bookState.addToFavorites ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        size: 40*fem,
-                        color: bookState.addToFavorites ? Colors.redAccent : const Color(0xff404040),
-                      ),
+                                          },
+                                          child: const Text('Cancel')
+                                      ),
+                                      TextButton(
+                                          onPressed: () async {
+                                            bookState.addToFavorites = !bookState.addToFavorites;
+
+                                            final updateBookBackend = UpdateBookBackend();
+                                            final result = await updateBookBackend.addBookToLibrary(bookState);
+
+                                            if (mounted) {
+                                              if (result['success']) {
+                                                final String action = bookState.addToFavorites ? 'add to' : 'remove from';
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(SnackBar(content: Text('Successfully $action favorites list!')));
+                                                setState(() {});
+                                                await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                              } else {
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(SnackBar(content: Text(result['message'])));
+                                              }
+                                            }
+                                          },
+                                          child: const Text('Yes')
+                                      ),
+                                    ],
+                                  );
+                                }
+                            );
+                          },
+                          icon: Icon(
+                            bookState.addToFavorites ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            size: 33*fem,
+                            color: bookState.addToFavorites ? Colors.redAccent : const Color(0xff404040),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            final provider = container.read(userProvider);
+                            final UserData? user = provider.user;
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  content: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 190,
+                                        height: 190,
+                                        child: QrImageView(
+                                          data: '{"Share" : true,'
+                                                '"User" : "${user?.name}",'
+                                                '"Book Id" : "${widget.book?.id}",'
+                                                '"Comment" : "${bookState.comment.join(', ')}",'
+                                                '"Quotation": "${bookState.quotation.join(', ')}"'
+                                                '}',
+                                          version: QrVersions.auto,
+                                          size: 320,
+                                          gapless: false,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                );
+                              },
+                            );
+                          },
+                          icon: Icon(
+                            Icons.share_rounded,
+                            size: 33*fem,
+                            color: const Color(0xff404040),
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 ],

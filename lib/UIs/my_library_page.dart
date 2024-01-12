@@ -1,7 +1,15 @@
+import 'dart:convert';
+
+import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/UIs/book.dart';
+import 'package:login_test/UIs/shared_book.dart';
+import 'package:login_test/backend/update_book_backend.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import '../backend/google_books_api.dart';
 import '../book_data.dart';
 import '../database/book_database.dart';
 import '../user_data.dart';
@@ -80,9 +88,75 @@ class MyLibraryPageState extends State<MyLibraryPage> with AutomaticKeepAliveCli
             ),
             // Search icon
             IconButton(
-              icon: const Icon(Icons.search, color: Color(0xff404040),),
-              onPressed: () {
-                _updateBookList();
+              icon: Icon(MdiIcons.qrcodeScan, color: Color(0xff404040),),
+              onPressed: () async {
+                ScanResult barcode = await BarcodeScanner.scan();
+
+                // Access the values from the map
+                if (int.tryParse(barcode.rawContent) == null) {
+                  String parsedContent = barcode.rawContent.replaceAll("'", "");
+
+                  // Decode the JSON string into a map
+                  Map<String, dynamic> dataMap = jsonDecode(parsedContent);
+                  String shareUser = dataMap['User'];
+                  String bookId = dataMap['Book Id'];
+                  List<String> comments = dataMap['Comment'].toString().split(', ');
+                  List<String> quotations = dataMap['Quotation'].toString().split(', ');
+
+                  final updateBookBackend = UpdateBookBackend();
+                  final result = await updateBookBackend.getBookByBookId(bookId);
+                  if (mounted) {
+                    if (result['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SharedBookScreen(book: result['book'], comments: comments, quotations: quotations, userName: shareUser,),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result['message'])),
+                      );
+                    }
+                  }
+                } else {
+                  final result = await getBookByISBN(barcode.rawContent);
+
+                  if (mounted) {
+                    if (result['success']) {
+                      final bookInfo = result['bookInfo'];
+                      Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddBookScreen(book: retrievedBook),
+                        ),
+                      );
+                    } else {
+                      if (result.containsKey('book') && result.containsKey('bookState')) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookScreen(book: result['book'], bookState: result['bookState'],),
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(result['message'])),
+                        );
+                      } else {
+                        if (kDebugMode) {
+                          print('Error: ${result['message']}');
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Cannot find the book, please try another one!')),
+                        );
+                      }
+                    }
+                  }
+                }
               },
             ),
             // Stack or List icon
@@ -621,7 +695,7 @@ class FilterDialogState extends State<FilterDialog> {
                 style: TextStyle(
                   fontSize: 18*fem,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xff19191b),
+                  color: const Color(0xff404040),
                 ),
               ),
               SizedBox(height: 8*fem),
@@ -631,7 +705,7 @@ class FilterDialogState extends State<FilterDialog> {
                   textStyle: TextStyle(
                     fontSize: 16*fem,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff19191b),
+                    color: const Color(0xff404040),
                   ),
                   controller: categoryController,
                   menuHeight: 300*fem,
@@ -759,7 +833,7 @@ class FilterDialogState extends State<FilterDialog> {
                   color: const Color(0xff19191b),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8*fem),
               Center(
                 child: DropdownMenu<String>(
                   textStyle: TextStyle(

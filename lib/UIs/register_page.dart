@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:login_test/UIs/login_page.dart';
 import 'package:login_test/backend/login_backend.dart';
 
-import '../utils.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -20,8 +19,18 @@ class RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
 
+  final _emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+
   bool _isPasswordVisible = false;
   bool _passwordsMatch = true;
+  bool _isValidEmail = true;
+
+  bool _isTextValid() {
+    bool isUsernameValid = _usernameController.text.isNotEmpty;
+    bool isNameValid = _nameController.text.isNotEmpty;
+    bool isAgeValid = _ageController.text.isNotEmpty;
+    return isUsernameValid && _isValidEmail && isNameValid && isAgeValid && _passwordsMatch;
+  }
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -130,9 +139,26 @@ class RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               const SizedBox(height: 5),
-              TextField(
+              TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  errorText: _isValidEmail ? null : 'Invalid email format',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                onChanged: (value) {
+                  if(value.isEmpty) {
+                    print('yes');
+                    setState(() {
+                      _isValidEmail = true;
+                    });
+                    print(_isValidEmail);
+                  } else {
+                    setState(() {
+                      _isValidEmail = _emailRegex.hasMatch(value);
+                    });
+                  }
+                },
               ),
               const SizedBox(height: 5),
               TextField(
@@ -140,32 +166,24 @@ class RegisterPageState extends State<RegisterPage> {
                 decoration: const InputDecoration(labelText: 'Name'),
               ),
               const SizedBox(height: 5),
-              TextField(
+              TextFormField(
                 controller: _ageController,
                 keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                  TextInputFormatter.withFunction(
-                          (TextEditingValue oldValue, TextEditingValue newValue) {
-                        try {
-                          final intValue = int.parse(newValue.text);
-                          if (intValue > 0) {
-                            return newValue;
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(content: Text('Error')));
-                        }
-                        return oldValue;
-                      }),
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (_) {
+                  setState(() {});
+                },
                 decoration: const InputDecoration(
                   labelText: 'Age',
                 ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _passwordsMatch ? _submit : null,
+                onPressed: _isTextValid() ? _submit : () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter information in all the field above!')),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color(0xffffffff),
                   backgroundColor: const Color(0xff404040),
@@ -181,22 +199,21 @@ class RegisterPageState extends State<RegisterPage> {
                   );
                 },
                 child: RichText(
-                  text: TextSpan(
-                    style: safeGoogleFont (
-                      'Inter',
+                  text: const TextSpan(
+                    style: TextStyle (
                       fontSize: 14,
-                      color: const Color(0xff8e8e93),
+                      color: Color(0xff8e8e93),
                     ),
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: 'Already have an account? ',
                       ),
                       TextSpan(
                         text: 'Log in here',
-                        style: safeGoogleFont(
-                          'Inter',
+                        style: TextStyle(
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xff8e8e93),
+                          color: Color(0xff8e8e93),
                         ),
                       ),
                     ],

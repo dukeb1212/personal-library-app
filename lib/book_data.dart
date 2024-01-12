@@ -3,6 +3,25 @@ import 'dart:math';
 
 import 'package:intl/intl.dart';
 
+Map<int, String> parseAuthorNames(String authorNames) {
+  Map<int, String> result = {};
+
+  List<String> authorPairs = authorNames.split(', ');
+
+  for (String authorPair in authorPairs) {
+    List<String> parts = authorPair.split(': ');
+    if (parts.length == 2) {
+      int? authorId = int.tryParse(parts[0]);
+      String authorName = parts[1];
+      if (authorId != null) {
+        result[authorId] = authorName;
+      }
+    }
+  }
+
+  return result;
+}
+
 class Book {
   final String id;
   final String title;
@@ -43,21 +62,18 @@ class Book {
     };
   }
 
-  factory Book.fromMap(Map<String, dynamic> map) {
+  factory Book.fromMap(Map<String, dynamic> bookData) {
     return Book(
-      id: map['id'],
-      title: map['title'],
-      subtitle: map['subtitle'],
-      authors: List<String>.from(map['authors'] ?? []),
-      category: map['category'],
-      publishedDate: map['publishedDate'],
-      description: map['description'],
-      totalPages: map['totalPages'],
-      language: map['language'],
-      imageLinks: {
-        'smallThumbnail': map['imageLinks']['smallThumbnail'].toString(),
-        'thumbnail': map['imageLinks']['thumbnail'].toString(),
-      },
+      id: bookData['book_id'],
+      title: bookData['title'],
+      subtitle: bookData['subtitle'],
+      authors: parseAuthorNames(bookData['author_names']).values.toList(),
+      category: bookData['category_name'],
+      publishedDate: bookData['published_date'] ?? '',
+      description: bookData['description'],
+      totalPages: bookData['total_pages'],
+      language: bookData['language'],
+      imageLinks: Map<String, String>.from(bookData['image_links'] ?? {}),
     );
   }
 

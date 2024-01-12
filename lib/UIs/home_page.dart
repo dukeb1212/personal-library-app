@@ -22,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   List<Book> suggestedBooksByCategory = [];
   List<Book> suggestedBooksByAuthor = [];
   List<String> topAuthors = [];
+  final databaseHelper = DatabaseHelper();
 
   @override
   void initState() {
@@ -35,7 +36,6 @@ class _HomePageState extends State<HomePage> {
     final UserData? user = provider.user;
     final userId = user!.userId;
 
-    final databaseHelper = DatabaseHelper();
     await databaseHelper.initializeDatabase(user.username);
 
     // Retrieve all BookState objects
@@ -55,7 +55,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadSuggestedBooks() async {
-    final databaseHelper = DatabaseHelper();
     var categories = await databaseHelper.getTopCategories(3);
     topAuthors = await databaseHelper.getTopAuthors(3);
 
@@ -161,6 +160,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            SizedBox(height: 10*fem,),
             SizedBox(
               height: 320*fem,
               child: ListView(
@@ -322,51 +322,56 @@ class _HomePageState extends State<HomePage> {
 
     var bookCover = NetworkImage(book.imageLinks['thumbnail']!);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddBookScreen(book: book)));
-      },
-      child: Container(
-        margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
-        width: 150 * fem,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 250 * fem,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12 * fem),
-                image: DecorationImage(
-                  image: bookCover,
-                  fit: BoxFit.cover,
-                  onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+    final result = await databaseHelper.doesBookExist(book.id);
+    if (result['existed']) {
+      return SizedBox.shrink();
+    } else {
+      return GestureDetector(
+        onTap: () {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddBookScreen(book: book)));
+        },
+        child: Container(
+          margin: EdgeInsets.fromLTRB(10*fem,0,0,0),
+          width: 150 * fem,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 250 * fem,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12 * fem),
+                  image: DecorationImage(
+                    image: bookCover,
+                    fit: BoxFit.cover,
+                    onError: (context, stackTrace) => const AssetImage('assets/default-book.png'),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 10 * fem),
-            Text(
-              book.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16 * fem,
-                fontWeight: FontWeight.bold,
+              SizedBox(height: 10 * fem),
+              Text(
+                book.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16 * fem,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Text(
-              book.authors.length > 1
-                  ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
-                  : book.authors[0],
-              style: TextStyle(
-                fontSize: 16 * fem,
-                color: Colors.grey,
+              Text(
+                book.authors.length > 1
+                    ? '${truncateAuthorName(book.authors[0])}, ${truncateAuthorName(book.authors[1])}'
+                    : book.authors[0],
+                style: TextStyle(
+                  fontSize: 16 * fem,
+                  color: Colors.grey,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

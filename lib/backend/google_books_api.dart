@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:login_test/book_data.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:login_test/database/book_database.dart';
 
 String apiKey = dotenv.env['GOOGLE_BOOKS_API_KEY'] ?? '';
 
@@ -48,71 +50,82 @@ Future<Map<String, dynamic>> getBookSuggestions(List<String> selectedCategories)
 }
 
 Future<Map<String, dynamic>> getBookByISBN(String isbn) async {
-  final Map<String, dynamic> bookInfo = {};
+  final databaseHelper = DatabaseHelper();
+  final result = await databaseHelper.doesBookExist(isbn);
+  if(result['existed']) {
+    return {
+      'success' : false,
+      'message' : 'Book already exist!',
+      'book' : result['book'],
+      'bookState' : result['bookState']
+    };
+  } else {
+    final Map<String, dynamic> bookInfo = {};
 
-  final encodedISBN = Uri.encodeComponent(isbn);
-  final response = await http.get(
-    Uri.parse(
-      'https://www.googleapis.com/books/v1/volumes?q=isbn:$encodedISBN&key=$apiKey',
-    ),
-  );
-  if (response.statusCode == 200) {
-    final jsonResponse = json.decode(response.body);
+    final encodedISBN = Uri.encodeComponent(isbn);
+    final response = await http.get(
+      Uri.parse(
+        'https://www.googleapis.com/books/v1/volumes?q=isbn:$encodedISBN&key=$apiKey',
+      ),
+    );
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
 
-    if (jsonResponse.containsKey('items') && jsonResponse['items'].isNotEmpty) {
-      final item = jsonResponse['items'][0];
-      if (item.containsKey('volumeInfo')) {
-        final volumeInfo = item['volumeInfo'];
-        if (volumeInfo.containsKey('title')) {
-          bookInfo['title'] = volumeInfo['title'];
+      if (jsonResponse.containsKey('items') && jsonResponse['items'].isNotEmpty) {
+        final item = jsonResponse['items'][0];
+        if (item.containsKey('volumeInfo')) {
+          final volumeInfo = item['volumeInfo'];
+          if (volumeInfo.containsKey('title')) {
+            bookInfo['title'] = volumeInfo['title'];
+          }
+          if (volumeInfo.containsKey('subtitle')) {
+            bookInfo['subtitle'] = volumeInfo['subtitle'];
+          }
+          if (volumeInfo.containsKey('authors')) {
+            bookInfo['authors'] = volumeInfo['authors'];
+          }
+          if (volumeInfo.containsKey('categories')) {
+            bookInfo['category'] = volumeInfo['categories'][0];
+          }
+          if (volumeInfo.containsKey('publishedDate')) {
+            bookInfo['publishedDate'] = volumeInfo['publishedDate'];
+          }
+          if (volumeInfo.containsKey('description')) {
+            bookInfo['description'] = volumeInfo['description'];
+          }
+          if (volumeInfo.containsKey('pageCount')) {
+            bookInfo['pageCount'] = volumeInfo['pageCount'];
+          }
+          if (volumeInfo.containsKey('language')) {
+            bookInfo['language'] = volumeInfo['language'];
+          }
+          if (volumeInfo.containsKey('imageLinks')) {
+            bookInfo['imageLinks'] = volumeInfo['imageLinks'];
+          } else { bookInfo['imageLinks'] = {'smallThumbnail': '', 'thumbnail': ''}; }
+          // Add more fields as needed
+          bookInfo['id'] = isbn;
         }
-        if (volumeInfo.containsKey('subtitle')) {
-          bookInfo['subtitle'] = volumeInfo['subtitle'];
-        }
-        if (volumeInfo.containsKey('authors')) {
-          bookInfo['authors'] = volumeInfo['authors'];
-        }
-        if (volumeInfo.containsKey('categories')) {
-          bookInfo['category'] = volumeInfo['categories'][0];
-        }
-        if (volumeInfo.containsKey('publishedDate')) {
-          bookInfo['publishedDate'] = volumeInfo['publishedDate'];
-        }
-        if (volumeInfo.containsKey('description')) {
-          bookInfo['description'] = volumeInfo['description'];
-        }
-        if (volumeInfo.containsKey('pageCount')) {
-          bookInfo['pageCount'] = volumeInfo['pageCount'];
-        }
-        if (volumeInfo.containsKey('language')) {
-          bookInfo['language'] = volumeInfo['language'];
-        }
-        if (volumeInfo.containsKey('imageLinks')) {
-          bookInfo['imageLinks'] = volumeInfo['imageLinks'];
-        } else { bookInfo['imageLinks'] = {'smallThumbnail': '', 'thumbnail': ''}; }
-        // Add more fields as needed
-        bookInfo['id'] = isbn;
+      } else {
+        return {
+          'success': false,
+          'message': 'No book found for ISBN: $isbn',
+        };
       }
     } else {
       return {
         'success': false,
-        'message': 'No book found for ISBN: $isbn',
+        'message': 'Failed to retrieve book information for ISBN: $isbn',
       };
     }
-  } else {
+
     return {
-      'success': false,
-      'message': 'Failed to retrieve book information for ISBN: $isbn',
+      'success': true,
+      'bookInfo': bookInfo,
     };
   }
-
-  return {
-    'success': true,
-    'bookInfo': bookInfo,
-  };
 }
 
-Future<Book?> getBookByBarcode() async {
+Future<Map<String, dynamic>> getBookByBarcode() async {
   String scannedBarcode = '';
   try {
     ScanResult barcode = await BarcodeScanner.scan();
@@ -121,7 +134,10 @@ Future<Book?> getBookByBarcode() async {
     if (kDebugMode) {
       print('Error: $e');
     }
-    return null; // or handle the error appropriately
+    return {
+      'success' : false,
+      'message' : e,
+    }; // or handle the error appropriately
   }
   if (scannedBarcode.isNotEmpty) {
     final result = await getBookByISBN(scannedBarcode);
@@ -129,15 +145,34 @@ Future<Book?> getBookByBarcode() async {
     if (result['success']) {
       final bookInfo = result['bookInfo'];
       Book retrievedBook = Book.fromGoogleBooksAPI(bookInfo);
-      return retrievedBook;
+      return {
+        'success' : true,
+        'book' : retrievedBook
+      };
     } else {
-      if (kDebugMode) {
-        print('Error: ${result['message']}');
+      if (result.containsKey('book') && result.containsKey('bookState')){
+        return {
+          'success' : false,
+          'message' : result['message'],
+          'book' : result['book'],
+          'bookState' : result['bookState']
+        };
+      } else {
+        if (kDebugMode) {
+          print('Error: ${result['message']}');
+        }
+        return {
+          'success' : false,
+          'message' : result['message']
+        };// or handle the error appropriately
       }
-      return null; // or handle the error appropriately
     }
+  } else {
+    return {
+      'success' : false,
+      'message' : 'Cannot find the book, please try another one!'
+    };
   }
-  return null;
 }
 
 Future<Map<String, dynamic>> getBookByCategory(String category) async {

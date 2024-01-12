@@ -68,6 +68,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         userId: userId,
       );
       provider.setUser(editedUserInfo);
+      setSharedPrefs(editedUserInfo);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result['message'])),
       );
@@ -88,7 +89,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     fem = MediaQuery.of(context).size.width / baseWidth;
-
     final provider = container.read(userProvider);
     final userInfo = provider.user;
 
@@ -96,12 +96,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
       return const CircularProgressIndicator(); // Loading indicator or error handling
     }
 
-    curUsername = userInfo.username.toString();
-    nameController.text = userInfo.name;
-    emailController.text = userInfo.email;
-    ageController.text = userInfo.age.toString();
-    usernameController.text = userInfo.username;
-    userId = userInfo.userId;
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      curUsername = userInfo.username.toString();
+      nameController.text = userInfo.name;
+      emailController.text = userInfo.email;
+      ageController.text = userInfo.age.toString();
+      usernameController.text = userInfo.username;
+      userId = userInfo.userId;
+    });
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -167,6 +169,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           TextButton(
                             onPressed: () async {
                               await submitInfo();
+                              setState(() {});
                               if (mounted) {
                                 Navigator.of(context).pop();
                               }
@@ -301,7 +304,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        content: const Text('Developed by students of Hanoi University of Science and Technology.\nContact: github.com/dukeb1212 for more details.'),
+                        content: const Text(
+                          'Developed by students of Hanoi University of Science and Technology.\nContact: github.com/dukeb1212 for more details.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () {
