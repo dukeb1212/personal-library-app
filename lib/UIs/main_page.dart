@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:login_test/UIs/test.dart';
+import 'package:login_test/UIs/notification_page.dart';
 import 'home_page.dart';
 import 'info_page.dart';
 import 'my_library_page.dart';

@@ -87,24 +87,30 @@ class NotificationPageState extends State<NotificationPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(width: 90*fem,),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _updateNotificationList();
-                    });
-                  },
-                  icon: const Icon(Icons.refresh_rounded),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _updateNotificationList();
+                          });
+                        },
+                        icon: const Icon(Icons.refresh_rounded),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          await LocalNotification.flutterLocalNotificationsPlugin.cancelAll();
+                          setState(() {
+                            activeNotificationsList.clear();
+                          });
+                        },
+                        icon: const Icon(Icons.delete_rounded),
+                      )
+                    ],
+                  ),
                 ),
-                IconButton(
-                  onPressed: () async {
-                    await LocalNotification.flutterLocalNotificationsPlugin.cancelAll();
-                    setState(() {
-                      activeNotificationsList.clear();
-                    });
-                  },
-                  icon: const Icon(Icons.delete_rounded),
-                )
               ],
             ),
           ),
@@ -252,7 +258,7 @@ class NotificationPageState extends State<NotificationPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 250*fem,
+                            width: 200*fem,
                             child: Text(
                               'Book: ${books[index].title}',
                               style: TextStyle(
@@ -276,18 +282,10 @@ class NotificationPageState extends State<NotificationPage> {
                         value: plans[index].active,
                         onChanged: (value) async{
                           final result = await notificationBackend.activateNotification(value, plans[index].id);
-                          if(result['success']){
-                            await dbHelper.activateNotificationById(plans[index].id, value);
-                            setState(() {
-                              plans[index].active = value ;
-                            });
-                          } else {
-                            if(mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error! Please try again.'))
-                              );
-                            }
-                          }
+                          await dbHelper.activateNotificationById(plans[index].id, value);
+                          setState(() {
+                            plans[index].active = value ;
+                          });
                         },
                       ),
                     ],

@@ -78,7 +78,7 @@ class AddEventPageState extends State<AddEventPage> {
         title: const Text('Schedule Reading Plans'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(11*fem),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -97,15 +97,16 @@ class AddEventPageState extends State<AddEventPage> {
                     border: Border.all(width: 1, color: Colors.grey),
                     borderRadius: BorderRadius.circular(5)
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Flex(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  direction: Axis.horizontal,
                   children: [
                     Expanded(
                       child: ButtonTheme(
                         alignedDropdown: true,
                         child: DropdownButton(
                           hint: SizedBox(
-                            width:280*fem,
+                            width:270*fem,
                             child:
                             Text(
                               selectedBook.title.isEmpty ? 'Select Book' : selectedBook.title,
@@ -125,8 +126,9 @@ class AddEventPageState extends State<AddEventPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   SizedBox(
+                                    height: 100*fem,
                                       width: 250*fem,
-                                      child: Text(book.title)
+                                      child: Align(alignment: Alignment.centerLeft, child: Text(book.title))
                                   ),
                                   Container(
                                     height: 50*fem,
@@ -142,8 +144,8 @@ class AddEventPageState extends State<AddEventPage> {
                           }).toList(),
                         ),
                       ),
-                    )
-                  ],
+                    ),
+                  ]
                 ),
               ),
             ),

@@ -3,10 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:login_test/UIs/add_book_page_final.dart';
 import 'package:login_test/UIs/book.dart';
 import 'package:login_test/UIs/main_page.dart';
-import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
 import 'UIs/login_page.dart';
 import 'UIs/automatic_login.dart';
@@ -95,7 +93,6 @@ class _MyAppState extends State<MyApp> {
   listenNotification() {
     LocalNotification.onClickNotification.stream.listen((event) async {
       String a = event.replaceAll('"', '');
-      print(a);
       final databaseHelper = DatabaseHelper();
       final result = await databaseHelper.doesBookExist(a);
       if(result['existed']) {

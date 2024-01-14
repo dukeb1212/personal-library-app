@@ -73,7 +73,7 @@ class DatabaseHelper {
 
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       readOnly: false,
       onCreate: (db, version) async {
         // Create tables if needed
@@ -88,6 +88,11 @@ class DatabaseHelper {
 
         await db.execute(notificationsTable);
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2 && newVersion < 2) {
+          await db.execute(notificationsTable);
+        }
+      }
     );
   }
 
