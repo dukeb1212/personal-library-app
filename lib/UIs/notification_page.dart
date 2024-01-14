@@ -168,6 +168,10 @@ class NotificationPageState extends State<NotificationPage> {
                                     MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1,))
                                 );
                               }
+                              await LocalNotification.flutterLocalNotificationsPlugin.cancelAll();
+                              setState(() {
+                                activeNotificationsList.clear();
+                              });
                             }
                           },
                           style: ElevatedButton.styleFrom(
