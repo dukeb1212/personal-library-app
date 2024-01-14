@@ -277,7 +277,7 @@ class NotificationPageState extends State<NotificationPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 200*fem,
+                            width: 240*fem,
                             child: Text(
                               'Book: ${books[index].title}',
                               style: TextStyle(
