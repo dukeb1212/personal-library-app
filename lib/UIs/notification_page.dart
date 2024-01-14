@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:login_test/UIs/book.dart';
+import 'package:login_test/UIs/main_page.dart';
 import 'package:login_test/backend/notification_backend.dart';
 import 'package:flutter/foundation.dart';
 import '../backend/local_notification.dart';
@@ -152,8 +154,21 @@ class NotificationPageState extends State<NotificationPage> {
                         margin: EdgeInsets.symmetric(vertical: 8 * fem),
                         width: MediaQuery.of(context).size.width - 20 * fem,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // Chuyển đến trang sách
+                          onPressed: () async {
+                            final result = await dbHelper.doesBookExist(activeNotificationsList[index].body!);
+                            if (mounted) {
+                              if (result['existed']) {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => BookScreen(book: result['book'], bookState: result['bookState']))
+                                );
+                              } else {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const MyMainPage(initialTabIndex: 1,))
+                                );
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             alignment: Alignment.centerLeft,
@@ -210,7 +225,7 @@ class NotificationPageState extends State<NotificationPage> {
             ),
           ),
           Container(
-            height: 250*fem,
+            height: MediaQuery.of(context).size.height - 420*fem,
             margin: EdgeInsets.fromLTRB(15 * fem, 0, 15 * fem, 0),
             child: ListView.builder(
               padding: EdgeInsets.zero,
