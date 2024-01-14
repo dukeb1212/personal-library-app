@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../user_data.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -26,6 +27,24 @@ class AuthBackend {
       }
     }
     return null;
+  }
+
+  Future<bool> attemptAutomaticLogin(String token) async {
+    final headers = {
+      'Authorization': 'Bearer $token',
+    };
+
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/validateToken'), headers: headers);
+
+      if (response.statusCode == 200) {
+        return true; // Token is valid
+      } else {
+        return false; // Token validation failed
+      }
+    } catch (e) {
+      return false; // Request or network error
+    }
   }
 
   // Function to handle user registration
@@ -88,4 +107,27 @@ class AuthBackend {
     }
   }
 
+  Future<void> sendTokenToServer(String fcmToken, int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/updateFcmToken'), // Replace with your server endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'fcmToken': fcmToken, 'userId': userId}),
+      );
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('FCM token sent to server successfully');
+        }
+      } else {
+        if (kDebugMode) {
+          print('Failed to send FCM token to server. Status code: ${response.statusCode}');
+        }
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error sending FCM token to server: $error');
+      }
+    }
+  }
 }

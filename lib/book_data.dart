@@ -23,16 +23,16 @@ Map<int, String> parseAuthorNames(String authorNames) {
 }
 
 class Book {
-  final String id;
-  final String title;
-  final String subtitle;
-  final List<String> authors;
-  final String category;
-  final String publishedDate;
-  final String description;
-  final int totalPages;
-  final String language;
-  final Map<String, String> imageLinks;
+  String id;
+  String title;
+  String subtitle;
+  List<String> authors;
+  String category;
+  String publishedDate;
+  String description;
+  int totalPages;
+  String language;
+  Map<String, String> imageLinks;
 
   Book({
     required this.id,
