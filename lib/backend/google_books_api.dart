@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:login_test/book_data.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';

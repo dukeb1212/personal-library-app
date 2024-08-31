@@ -72,7 +72,7 @@ class CategorySelectionPageState extends State<CategorySelectionPage> {
             child: GestureDetector(
               onTap: canProceed()
                   ? () async {
-                final result = await getBookSuggestions(selectedCategories);
+                await getBookSuggestions(selectedCategories);
               }
                   : null,
               child: Container(
