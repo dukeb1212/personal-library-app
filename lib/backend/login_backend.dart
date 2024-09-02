@@ -9,7 +9,7 @@ class AuthBackend {
   // Function to handle user login
   Future<String?> loginUser(String username, String password) async {
     final response = await http.post(
-      Uri.parse("$_baseUrl/login"),
+      Uri.parse("$_baseUrl/account/login"),
       body: json.encode({
         'username': username,
         'password': password,
@@ -38,7 +38,7 @@ class AuthBackend {
     }
 
     final response = await http.post(
-      Uri.parse("$_baseUrl/register"),
+      Uri.parse("$_baseUrl/account/register"),
       body: json.encode({
         'username': username,
         'password': password,
