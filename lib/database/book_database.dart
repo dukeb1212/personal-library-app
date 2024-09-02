@@ -2,11 +2,14 @@ import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
+import 'package:login_test/backend/notification_backend.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import '../book_data.dart';
 import '../user_data.dart';
+import '../notification_data.dart' as noti;
 
 class DatabaseHelper {
   final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? '';
@@ -58,9 +61,19 @@ class DatabaseHelper {
         );
       ''';
 
+    const String notificationsTable = '''
+        CREATE TABLE notifications (
+          id INTEGER,
+          book_id TEXT,
+          date_time TEXT,
+          repeat_type INTEGER,
+          active INTEGER
+        );
+      ''';
+
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       readOnly: false,
       onCreate: (db, version) async {
         // Create tables if needed
@@ -72,7 +85,14 @@ class DatabaseHelper {
 
         // Create write_book table
         await db.execute(writeBookTable);
+
+        await db.execute(notificationsTable);
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2 && newVersion < 2) {
+          await db.execute(notificationsTable);
+        }
+      }
     );
   }
 
@@ -411,6 +431,92 @@ class DatabaseHelper {
         'message' : 'Book not found!'
       };
     }
+  }
+
+  Future<void> syncNotificationsFromServer(int userId) async {
+    final NotificationBackend notificationBackend = NotificationBackend();
+    final result = await notificationBackend.fetchNotification(userId);
+
+    if (result['success']) {
+      final List<dynamic> notis = result['notifications'];
+      final List<Map<String, dynamic>> notificationsData = notis.map((notification) => notification as Map<String, dynamic>).toList();
+      List<int> existingNotificationIds = await _db.query(
+        'notifications',
+        columns: ['id'],
+      ).then((List<Map<String, dynamic>> results) {
+        return results.map<int>((row) => row['id']).toList();
+      });
+
+      for (var notificationData in notificationsData) {
+        noti.Notification notification = noti.Notification(
+          id: notificationData['id'],
+          bookId: notificationData['book_id'],
+          dateTime: DateTime.parse(notificationData['date_time']),
+          repeatType: notificationData['repeat_type'],
+          active: notificationData['active']
+        );
+
+        final notificationMap = {
+          'id': notification.id,
+          'book_id': notification.bookId,
+          'date_time': DateFormat('yyyy-MM-dd HH:mm').format(notification.dateTime.toLocal()).toString(),
+          'repeat_type': notification.repeatType,
+          'active': notification.active ? 1 : 0
+        };
+
+        if (existingNotificationIds.contains(notification.id)) {
+          // Book exists, perform an update
+          await _db.update(
+            'notifications',
+            notificationMap,
+            where: 'id = ?',
+            whereArgs: [notification.id],
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        } else {
+          await _db.insert('notifications', notificationMap, conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+
+      List<int> notificationsToDelete = existingNotificationIds.where((id) => !notificationsData.any((notification) => notification['id'] == id)).toList();
+      for (int notificationIdToDelete in notificationsToDelete) {
+        // Delete the book from SQLite
+        await _db.delete('notifications', where: 'id = ?', whereArgs: [notificationIdToDelete]);
+      }
+    } else {
+      if (kDebugMode) {
+        print('Failed to sync notifications from server!');
+      }
+    }
+  }
+
+  Future<int> insertNotification(noti.Notification notification) async {
+    return await _db.insert('notifications', notification.toMap());
+  }
+
+  Future<List<noti.Notification>> getNotificationSchedule() async {
+    List<Map<String, dynamic>> maps = await _db.query('notifications');
+    return List.generate(maps.length, (index) {
+      return noti.Notification.fromMap(maps[index]);
+    });
+  }
+
+  Future<void> deleteAllSchedules() async {
+    await _db.delete('notifications');
+  }
+
+  Future<void> deleteNotificationScheduleById(int id) async {
+    await _db.delete('notifications', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> activateNotificationById(int id, bool active) async {
+    await _db.update(
+      'notifications',
+      {'active': active ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }
 

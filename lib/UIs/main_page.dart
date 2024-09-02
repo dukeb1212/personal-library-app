@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:login_test/UIs/notification_page.dart';
 import 'home_page.dart';
 import 'info_page.dart';
 import 'my_library_page.dart';
+import 'add_schedule_page.dart';
 
 class MyMainPage extends StatefulWidget {
   final int initialTabIndex;
@@ -49,6 +51,7 @@ class MyMainPageState extends State<MyMainPage> {
             HomePage(),
             // const BookPage(),
             MyLibraryPage(),
+            NotificationPage(),
             UserInfoPage(),
           ],
         ),

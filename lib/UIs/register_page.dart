@@ -195,7 +195,7 @@ class RegisterPageState extends State<RegisterPage> {
                   // Chuyển đến trang đăng nhập
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    MaterialPageRoute(builder: (context) => const LoginPage(payload: '',)),
                   );
                 },
                 child: RichText(

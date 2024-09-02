@@ -1,4 +1,6 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:login_test/UIs/book.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
 import 'register_page.dart';
@@ -8,7 +10,8 @@ import 'package:login_test/database/book_database.dart';
 
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final String? payload;
+  const LoginPage({super.key, required this.payload});
 
   @override
   LoginPageState createState() => LoginPageState();
@@ -49,12 +52,36 @@ class LoginPageState extends State<LoginPage> {
 
         final databaseHelper = DatabaseHelper();
         await databaseHelper.syncBooksFromServer(userData.userId, username);
+        await databaseHelper.syncNotificationsFromServer(userData.userId);
+
+        String? token = await FirebaseMessaging.instance.getToken();
+        _authBackend.sendTokenToServer(token!, userData.userId);
 
         if(mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MyMainPage()),
-          );
+          if(widget.payload!.isNotEmpty) {
+            final result = await databaseHelper.doesBookExist(widget.payload!);
+            if(mounted) {
+              if (result['existed']) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => BookScreen(book: result['book'], bookState: result['bookState'])),
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyMainPage()),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Book does not existed!')),
+                );
+              }
+            }
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MyMainPage()),
+            );
+          }
         }
         // Navigate to the desired page after successful login
       } else {
