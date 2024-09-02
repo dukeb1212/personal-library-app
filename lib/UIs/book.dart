@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:login_test/book_data.dart';
 import 'package:login_test/database/book_database.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
 import 'main_page.dart';
 
@@ -140,14 +141,15 @@ class BookScreenState extends State<BookScreen> {
 
                     final updateBookBackend = UpdateBookBackend();
                     final localDatabase = DatabaseHelper();
-                    final provider = container.read(userProvider);
-                    final UserData? user = provider.user;
 
                     bookState.percentRead = 100 * bookState.lastPageRead / widget.book!.totalPages ;
                     bookState.totalReadHours += elapsedTime.inSeconds/3600;
 
+                    final prefs = await SharedPreferences.getInstance();
+                    final accessToken = prefs.getString('accessToken');
+
                     final result = await updateBookBackend.addBookToLibrary(bookState);
-                    await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                    await localDatabase.syncBooksFromServer(accessToken!);
                     if (mounted) {
                       if (result['success']) {
                         Navigator.of(context).pop(true);
@@ -358,7 +360,9 @@ class BookScreenState extends State<BookScreen> {
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(SnackBar(content: Text('Successfully $action favorites list!')));
                                                 setState(() {});
-                                                await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                                final prefs = await SharedPreferences.getInstance();
+                                                final accessToken = prefs.getString('accessToken');
+                                                await localDatabase.syncBooksFromServer(accessToken!);
                                               } else {
                                                 Navigator.pop(context);
                                                 ScaffoldMessenger.of(context)
@@ -637,7 +641,10 @@ class BookScreenState extends State<BookScreen> {
                                     bookState.lastSeenPlace = placeController.text;
                                   });
                                   await updateBookBackend.addBookToLibrary(bookState);
-                                  await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                  final prefs = await SharedPreferences.getInstance();
+                                  final accessToken = prefs.getString('accessToken');
+
+                                  await localDatabase.syncBooksFromServer(accessToken!);
                                   if (mounted) {
                                     Navigator.of(context).pop();
                                   }
@@ -751,7 +758,10 @@ class BookScreenState extends State<BookScreen> {
                                     newQuotationController.clear();
                                   });
                                   await updateBookBackend.addBookToLibrary(bookState);
-                                  await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                  final prefs = await SharedPreferences.getInstance();
+                                  final accessToken = prefs.getString('accessToken');
+
+                                  await localDatabase.syncBooksFromServer(accessToken!);
 
                                   if (mounted) {
                                     Navigator.of(context).pop();
@@ -848,7 +858,10 @@ class BookScreenState extends State<BookScreen> {
                                     newCommentController.clear();
                                   });
                                   await updateBookBackend.addBookToLibrary(bookState);
-                                  await localDatabase.syncBooksFromServer(user!.userId, user.username);
+                                  final prefs = await SharedPreferences.getInstance();
+                                  final accessToken = prefs.getString('accessToken');
+
+                                  await localDatabase.syncBooksFromServer(accessToken!);
 
                                   if (mounted) {
                                     Navigator.of(context).pop();

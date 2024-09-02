@@ -198,18 +198,31 @@ class DatabaseHelper {
     }
   }
 // Add more methods for CRUD operations as needed
-  Future<void> syncBooksFromServer(int userId, String username) async {
-    final response = await http.get(Uri.parse('$_baseUrl/books?userId=$userId'));
+  Future<void> syncBooksFromServer(String accessToken) async {
+    final response = await http.get(
+        Uri.parse('$_baseUrl/book/sync'),
+        headers: {
+          'x_authorization': accessToken
+        }
+    );
 
 
     if (response.statusCode == 200) {
-
-      final List<dynamic> booksData = jsonDecode(response.body);
-      final List<Map<String, dynamic>> books = booksData.map((book) => book as Map<String, dynamic>).toList();
+      final responseBody = jsonDecode(response.body);
+      final userJson = responseBody['userData'];
+      final userData = UserData(
+        username: userJson['username'],
+        email: userJson['email'],
+        name: userJson['name'],
+        age: userJson['age'],
+        userId: userJson['id'],
+      );
+      final List<dynamic> bookData = responseBody['bookData'];
+      final List<Map<String, dynamic>> books = bookData.map((book) => book as Map<String, dynamic>).toList();
 
       final databaseHelper = DatabaseHelper();
-      await databaseHelper.initializeDatabase(username);
-      await databaseHelper.syncBooks(books, userId);
+      await databaseHelper.initializeDatabase(userData.username);
+      await databaseHelper.syncBooks(books, userData.userId);
     } else {
       // Handle error
       if (kDebugMode) {

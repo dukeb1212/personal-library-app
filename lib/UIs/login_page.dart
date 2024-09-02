@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../backend/token_backend.dart';
 import '../user_data.dart';
 import 'register_page.dart';
 import 'main_page.dart';
-import 'package:login_test/backend/login_backend.dart';
+import 'package:login_test/backend/auth_backend.dart';
 import 'package:login_test/database/book_database.dart';
 
 
@@ -26,13 +27,13 @@ class LoginPageState extends State<LoginPage> {
     final username = _usernameController.text;
     final password = _passwordController.text;
 
-    final token = await _authBackend.loginUser(username, password);
+    final result = await _authBackend.loginUser(username, password);
 
-    if (token != null && _rememberMe) {
-      // Store the token in shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', token);
-    }
+    // if (token != null && _rememberMe) {
+    //   // Store the token in shared preferences
+    //   final prefs = await SharedPreferences.getInstance();
+    //   await prefs.setString('token', token);
+    // }
 
     // Navigate to the next page (or perform other actions based on login success)
     if (mounted) {
@@ -41,22 +42,37 @@ class LoginPageState extends State<LoginPage> {
           _isLoggingIn = false;
         });
       }
-      if (token != null) {
-        final userData = await _authBackend.fetchUserData(username);
+      if (result['success']) {
+        final accessToken = result['accessToken'];
+        final refreshToken = result['refreshToken'];
+
+        // Store the tokens
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', accessToken);
+        await prefs.setString('refreshToken', refreshToken);
+
+        print(accessToken);
+
+        // Get user data and store the data
+        final userData = await _authBackend.fetchUserData(accessToken);
         setSharedPrefs(userData);
         final provider = container.read(userProvider);
         provider.setUser(userData);
 
+        // Sync data from server to local
         final databaseHelper = DatabaseHelper();
-        await databaseHelper.syncBooksFromServer(userData.userId, username);
+        await databaseHelper.syncBooksFromServer(accessToken);
 
+        final tokenManager = TokenManager();
+        await tokenManager.init();
+
+        // Navigate to Home page
         if(mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MyMainPage()),
           );
         }
-        // Navigate to the desired page after successful login
       } else {
         // Show an error message
         ScaffoldMessenger.of(context).showSnackBar(

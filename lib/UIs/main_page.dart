@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../backend/token_backend.dart';
 import 'home_page.dart';
 import 'info_page.dart';
 import 'my_library_page.dart';
@@ -18,6 +19,7 @@ class MyMainPageState extends State<MyMainPage> {
   late int selectedTabIndex;
   PageController pageController = PageController(
       initialPage: 0); // Initialize PageController
+  final tokenManager = TokenManager();
 
   @override
   void initState() {
@@ -28,6 +30,7 @@ class MyMainPageState extends State<MyMainPage> {
 
   @override
   void dispose() {
+    tokenManager.dispose();
     pageController
         .dispose(); // Dispose of the PageController to avoid memory leaks
     super.dispose();

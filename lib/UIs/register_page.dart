@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:login_test/UIs/login_page.dart';
-import 'package:login_test/backend/login_backend.dart';
+import 'package:login_test/backend/auth_backend.dart';
 
 
 class RegisterPage extends StatefulWidget {
