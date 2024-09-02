@@ -49,9 +49,5 @@
             </intent-filter>
         </receiver>
     </application>
-<<<<<<< HEAD
-    <uses-permission android:name="android.permission.INTERNET"/>
-=======
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
->>>>>>> origin/notification_added
 </manifest>
