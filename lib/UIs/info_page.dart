@@ -3,7 +3,7 @@ import 'package:login_test/database/book_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../user_data.dart';
 
-import 'package:login_test/backend/password_backend.dart';
+import 'package:login_test/backend/profile_backend.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 final provider = container.read(userProvider);
@@ -40,7 +40,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('token');
+    prefs.remove('accessToken');
+    prefs.remove('refreshToken');
     prefs.remove('username');
     prefs.remove('email');
     prefs.remove('name');

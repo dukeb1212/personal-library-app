@@ -1,7 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../backend/login_backend.dart';
+import '../backend/auth_backend.dart';
+import '../backend/token_backend.dart';
 import '../database/book_database.dart';
 import 'book.dart';
 import 'main_page.dart';
@@ -16,6 +17,7 @@ class AutomaticLogin extends StatefulWidget {
 }
 
 class AutomaticLoginState extends State<AutomaticLogin> {
+  final _authBackend = AuthBackend();
 
   @override
   void initState() {
@@ -26,24 +28,35 @@ class AutomaticLoginState extends State<AutomaticLogin> {
   Future<void> _checkAndPerformAutomaticLogin() async {
     // Check if a token exists in shared preferences
     final prefs = await SharedPreferences.getInstance();
-    final storedToken = prefs.getString('token');
-    final authBackend = AuthBackend();
+    final accessToken = prefs.getString('accessToken');
+    final refreshToken = prefs.getString('refreshToken');
+
     if (mounted) {
-      if (storedToken != null) {
+      if (accessToken != null && refreshToken != null) {
         // Use the stored token to attempt automatic login
-        final loginSuccess = await authBackend.attemptAutomaticLogin(storedToken);
+        final result = await _authBackend.refreshAccessToken(accessToken, refreshToken);
         if (mounted) {
-          if (loginSuccess) {
+          if (result['success']) {
+            // Store new access token
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('accessToken', result['accessToken']);
+
+            // Get stored user data
             final provider = container.read(userProvider);
             final userData = await retrieveUserData();
             provider.setUser(userData);
 
+            // Sync book data from server to local
             final databaseHelper = DatabaseHelper();
-            await databaseHelper.syncBooksFromServer(userData.userId, userData.username);
+            await databaseHelper.syncBooksFromServer(accessToken);
+
+            final tokenManager = TokenManager();
+            await tokenManager.init();
+            await databaseHelper.syncBooksFromServer(accessToken);
             await databaseHelper.syncNotificationsFromServer(userData.userId);
 
             String? token = await FirebaseMessaging.instance.getToken();
-            authBackend.sendTokenToServer(token!, userData.userId);
+            _authBackend.sendTokenToServer(token!, userData.userId);
 
             // Navigate to the authenticated part of your app
             if(mounted) {

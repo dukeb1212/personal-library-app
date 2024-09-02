@@ -8,7 +8,7 @@ class AuthBackend {
   final String _baseUrl = dotenv.env['NODE_JS_SERVER_URL'] ?? ''; // Adjust this to your server's address
 
   // Function to handle user login
-  Future<String?> loginUser(String username, String password) async {
+  Future<Map<String, dynamic>> loginUser(String username, String password) async {
     final response = await http.post(
       Uri.parse("$_baseUrl/account/login"),
       body: json.encode({
@@ -23,28 +23,17 @@ class AuthBackend {
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
       if (responseBody['success'] == true) {
-        return responseBody['token'] as String?;
+        return {
+          'success': true,
+          'accessToken': responseBody['accessToken'] as String?,
+          'refreshToken': responseBody['refreshToken'] as String?
+        };
       }
     }
-    return null;
-  }
-
-  Future<bool> attemptAutomaticLogin(String token) async {
-    final headers = {
-      'Authorization': 'Bearer $token',
+    return {
+      'success': false,
+      'message': 'Login failed. Please try again later.'
     };
-
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/validateToken'), headers: headers);
-
-      if (response.statusCode == 200) {
-        return true; // Token is valid
-      } else {
-        return false; // Token validation failed
-      }
-    } catch (e) {
-      return false; // Request or network error
-    }
   }
 
   // Function to handle user registration
@@ -83,17 +72,18 @@ class AuthBackend {
     return {'success': false, 'message': 'Server error'};
   }
 
-  Future<UserData> fetchUserData(String username) async {
+  Future<UserData> fetchUserData(String accessToken) async {
     final response = await http.get(
-      Uri.parse("$_baseUrl/user/$username"), // Replace with your server URL
+      Uri.parse("$_baseUrl/account/profile"), // Replace with your server URL
       headers: {
         'Content-Type': 'application/json',
+        'x_authorization': accessToken
       },
     );
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
-      final userJson = responseBody['user'];
+      final userJson = responseBody['userData'];
       final userData = UserData(
         username: userJson['username'],
         email: userJson['email'],
@@ -107,6 +97,38 @@ class AuthBackend {
     }
   }
 
+  Future<Map<String, dynamic>> refreshAccessToken(String accessToken, String refreshToken) async {
+    try {
+      final response = await http.post(
+          Uri.parse('$_baseUrl/account/refresh'),
+          body: jsonEncode({
+            'refreshToken': refreshToken
+          }),
+          headers: {
+            'x_authorization': accessToken,
+          }
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        // Refresh successfully
+        return {
+          'success': true,
+          'accessToken': responseBody['accessToken']
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Token error!'
+        }; // Token validation failed
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error: $e'
+      }; // Request or network error
+    }
+  }
   Future<void> sendTokenToServer(String fcmToken, int userId) async {
     try {
       final response = await http.post(

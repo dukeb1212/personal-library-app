@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../backend/google_books_api.dart';
 import '../backend/update_book_backend.dart';
 import '../book_data.dart';
@@ -204,8 +205,10 @@ class AddBookScreenState extends State<AddBookScreen> {
                 if (mounted) {
                   if (result['success']) {
                     final databaseHelper = DatabaseHelper();
-                    await databaseHelper.syncBooksFromServer(
-                        userData!.userId, userData.username);
+                    final prefs = await SharedPreferences.getInstance();
+                    final accessToken = prefs.getString('accessToken');
+
+                    await databaseHelper.syncBooksFromServer(accessToken!);
                     setState(() {
                       isSaving = false;
                     });
