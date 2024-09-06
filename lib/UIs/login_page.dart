@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:login_test/UIs/book.dart';
+import 'package:login_test/backend/notification_backend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../backend/token_backend.dart';
 import '../user_data.dart';
@@ -20,6 +21,7 @@ class LoginPage extends StatefulWidget {
 
 class LoginPageState extends State<LoginPage> {
   final _authBackend = AuthBackend();
+  final _notificationBackend = NotificationBackend();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
@@ -67,8 +69,8 @@ class LoginPageState extends State<LoginPage> {
         await databaseHelper.syncBooksFromServer(accessToken);
         await databaseHelper.syncNotificationsFromServer(userData.userId);
 
-        String? token = await FirebaseMessaging.instance.getToken();
-        _authBackend.sendTokenToServer(token!, userData.userId);
+        String? fcmToken = await FirebaseMessaging.instance.getToken();
+        _notificationBackend.sendTokenToServer(fcmToken!, userData.userId);
 
         final tokenManager = TokenManager();
         await tokenManager.init();

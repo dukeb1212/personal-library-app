@@ -101,10 +101,11 @@ class AuthBackend {
     try {
       final response = await http.post(
           Uri.parse('$_baseUrl/account/refresh'),
-          body: jsonEncode({
+          body: json.encode({
             'refreshToken': refreshToken
           }),
           headers: {
+            'Content-Type': 'application/json',
             'x_authorization': accessToken,
           }
       );
@@ -127,29 +128,6 @@ class AuthBackend {
         'success': false,
         'message': 'Error: $e'
       }; // Request or network error
-    }
-  }
-  Future<void> sendTokenToServer(String fcmToken, int userId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/updateFcmToken'), // Replace with your server endpoint
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'fcmToken': fcmToken, 'userId': userId}),
-      );
-
-      if (response.statusCode == 200) {
-        if (kDebugMode) {
-          print('FCM token sent to server successfully');
-        }
-      } else {
-        if (kDebugMode) {
-          print('Failed to send FCM token to server. Status code: ${response.statusCode}');
-        }
-      }
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error sending FCM token to server: $error');
-      }
     }
   }
 }

@@ -10,7 +10,7 @@ class NotificationBackend {
   Future<void> sendTokenToServer(String fcmToken, int userId) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/updateFcmToken'), // Replace with your server endpoint
+        Uri.parse('$_baseUrl/account/fcm'), // Replace with your server endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'fcmToken': fcmToken, 'userId': userId}),
       );
@@ -34,7 +34,7 @@ class NotificationBackend {
   Future<Map<String, dynamic>> addScheduleNotification(Notification notification, int userId) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/scheduleNotification'), // Replace with your server endpoint
+        Uri.parse('$_baseUrl/notification/add'), // Replace with your server endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'id': notification.id,
@@ -72,7 +72,7 @@ class NotificationBackend {
   Future<Map<String, dynamic>> activateNotification(bool active, int id) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/activateNotification'), // Replace with your server endpoint
+        Uri.parse('$_baseUrl/notification/activate'), // Replace with your server endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'active': active,
@@ -106,7 +106,7 @@ class NotificationBackend {
   Future<Map<String, dynamic>> deleteNotification(int id) async {
     try {
       final response = await http.delete(
-        Uri.parse('$_baseUrl/deleteNotification'), // Replace with your server endpoint
+        Uri.parse('$_baseUrl/notification/delete'), // Replace with your server endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'id': id
@@ -139,7 +139,7 @@ class NotificationBackend {
   Future<Map<String, dynamic>> fetchNotification(int userId) async {
     try {
       final response = await http.get(
-        Uri.parse("$_baseUrl/notification/$userId"), // Replace with your server URL
+        Uri.parse("$_baseUrl/notification/fetch?user=$userId"), // Replace with your server URL
         headers: {
           'Content-Type': 'application/json',
         },
@@ -172,7 +172,7 @@ class NotificationBackend {
   Future<Map<String, dynamic>> deleteAllNotifications(int userId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$_baseUrl/deleteAllNotifications'), // Replace with your server endpoint
+        Uri.parse('$_baseUrl/notification/delete/all'), // Replace with your server endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': userId
